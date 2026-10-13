@@ -9,12 +9,12 @@ class Settings(BaseSettings):
     postgres_password: str
     postgres_host: str
     postgres_port: int
-    
+
     @property
     def database_url(self) -> str:
         return (
-            f'postgresql+psycopg://'
-            f'{self.postgres_user}:{self.postgres_password}'
-            f'@{self.postgres_host}:{self.postgres_port}'
-            f'/{self.postgres_db}'
+            f"postgresql+psycopg://"
+            f"{self.postgres_user}:{self.postgres_password}"
+            f"@{self.postgres_host}:{self.postgres_port}"
+            f"/{self.postgres_db}"
         )

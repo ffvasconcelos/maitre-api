@@ -2,8 +2,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from maitre_api.presentation.http.dependencies import DBSession
-
-from maitre_api.presentation.http.routers import products
+from maitre_api.presentation.http.routers import products, tables
 
 app = FastAPI(
     title="Maitre API",
@@ -11,7 +10,7 @@ app = FastAPI(
 )
 
 app.include_router(products.router)
-
+app.include_router(tables.router)
 
 @app.get("/health")
 def health_check() -> dict[str, str]:

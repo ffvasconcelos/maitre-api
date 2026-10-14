@@ -1,16 +1,11 @@
-from enum import StrEnum
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, CheckConstraint, Integer
+from sqlalchemy import CheckConstraint, Integer
 from sqlalchemy import Enum as SqlAlchemyEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
+from maitre_api.domain.enums import TableStatus
 from maitre_api.infrastructure.database.base import BaseModel
-
-
-class TableStatus(StrEnum):
-    AVAIALABLE = "disponível"
-    OCCUPIED = "ocupada"
 
 
 class Table(BaseModel):

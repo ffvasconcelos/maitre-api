@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status
 
 from maitre_api.application.schemas.table import TableCreate, TableResponse
+from maitre_api.domain.exceptions.table import TableNumberAlreadyExists
 from maitre_api.presentation.http.dependencies import TableServiceDep
 
 router = APIRouter(prefix="/tables", tags=["Tables"])
@@ -12,7 +13,13 @@ router = APIRouter(prefix="/tables", tags=["Tables"])
 def create_table(
     table: TableCreate, service: TableServiceDep
 ) -> TableResponse:
-    return service.create_table(table)
+    try:
+        return service.create_table(table)
+    except TableNumberAlreadyExists as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e)
+        ) from e
 
 
 @router.get("", response_model=list[TableResponse], status_code=status.HTTP_200_OK)

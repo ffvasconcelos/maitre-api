@@ -2,6 +2,7 @@ from uuid import UUID
 
 from maitre_api.application.ports.unit_of_work import UnitOfWork
 from maitre_api.application.schemas.table import TableCreate
+from maitre_api.domain.exceptions.table import TableNumberAlreadyExists
 from maitre_api.infrastructure.database.models.table import Table
 
 
@@ -11,6 +12,11 @@ class TableService:
 
     def create_table(self, table_create: TableCreate) -> Table:
         with self._uow as uow:
+            existing_table = uow.tables.get_by_number(table_create.number)
+
+            if existing_table is not None:
+                raise TableNumberAlreadyExists(table_create.number)
+
             table = uow.tables.create(table_create)
             uow.commit()
             return table
@@ -27,3 +33,5 @@ class TableService:
         with self._uow as uow:
             return uow.tables.list()
 
+    def _allow_table_creation(self, table: TableCreate, uow: UnitOfWork) -> bool:
+        return uow.tables.get_by_number(table.number) is None

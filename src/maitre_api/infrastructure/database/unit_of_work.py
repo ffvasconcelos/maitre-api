@@ -3,18 +3,18 @@ from typing import Self
 
 from sqlalchemy.orm import Session
 
-from maitre_api.application.ports.product_repository import (
+from maitre_api.application.ports import (
     ProductRepositoryPort,
+    TableRepositoryPort,
 )
-from maitre_api.infrastructure.repositories.product_repository import (
-    ProductRepository,
-)
+from maitre_api.infrastructure.repositories import ProductRepository, TableRepository
 
 
 class SqlAlchemyUnitOfWork:
     def __init__(self, session: Session) -> None:
         self._session = session
         self.products: ProductRepositoryPort = ProductRepository(session)
+        self.tables: TableRepositoryPort = TableRepository(session)
         self._committed = False
 
     def __enter__(self) -> Self:

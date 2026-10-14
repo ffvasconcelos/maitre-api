@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+
 class ProductCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -11,6 +12,7 @@ class ProductCreate(BaseModel):
     description: str | None = None
     price: Decimal
     active: bool | None = True
+
 
 class ProductResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

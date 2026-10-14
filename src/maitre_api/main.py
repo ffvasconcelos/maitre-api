@@ -12,6 +12,7 @@ app = FastAPI(
 
 app.include_router(products.router)
 
+
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}

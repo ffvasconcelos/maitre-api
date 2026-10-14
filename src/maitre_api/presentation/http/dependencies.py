@@ -19,11 +19,10 @@ def get_db() -> Generator[Session]:
 
 DBSession = Annotated[Session, Depends(get_db)]
 
+
 def get_product_service(db: DBSession) -> ProductService:
     uow = SqlAlchemyUnitOfWork(db)
     return ProductService(uow)
 
-ProductServiceDep = Annotated[
-    ProductService,
-    Depends(get_product_service)
-]
+
+ProductServiceDep = Annotated[ProductService, Depends(get_product_service)]

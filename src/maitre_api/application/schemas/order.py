@@ -15,14 +15,14 @@ class OrderCreate(BaseModel):
 class OrderFilter(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    table_id = UUID | None
-    status = OrderStatus | None
+    table_id: UUID | None
+    status: OrderStatus | None
 
 
 class OrderUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    status = OrderStatus | None
+    status: OrderStatus | None
 
 class OrderResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

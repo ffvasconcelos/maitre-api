@@ -9,7 +9,7 @@ from maitre_api.application.ports import (
     TableRepositoryPort,
 )
 from maitre_api.infrastructure.repositories import (
-    OrderRepository, 
+    OrderRepository,
     ProductRepository,
     TableRepository,
 )

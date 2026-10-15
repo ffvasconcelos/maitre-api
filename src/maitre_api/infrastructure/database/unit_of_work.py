@@ -4,10 +4,15 @@ from typing import Self
 from sqlalchemy.orm import Session
 
 from maitre_api.application.ports import (
+    OrderRepositoryPort,
     ProductRepositoryPort,
     TableRepositoryPort,
 )
-from maitre_api.infrastructure.repositories import ProductRepository, TableRepository
+from maitre_api.infrastructure.repositories import (
+    OrderRepository, 
+    ProductRepository,
+    TableRepository,
+)
 
 
 class SqlAlchemyUnitOfWork:
@@ -15,6 +20,7 @@ class SqlAlchemyUnitOfWork:
         self._session = session
         self.products: ProductRepositoryPort = ProductRepository(session)
         self.tables: TableRepositoryPort = TableRepository(session)
+        self.orders: OrderRepositoryPort = OrderRepository(session)
         self._committed = False
 
     def __enter__(self) -> Self:

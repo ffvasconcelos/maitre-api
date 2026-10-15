@@ -2,6 +2,7 @@ from types import TracebackType
 from typing import Protocol, Self
 
 from maitre_api.application.ports import (
+    OrderRepositoryPort,
     ProductRepositoryPort,
     TableRepositoryPort,
 )
@@ -10,6 +11,7 @@ from maitre_api.application.ports import (
 class UnitOfWork(Protocol):
     products: ProductRepositoryPort
     tables: TableRepositoryPort
+    orders: OrderRepositoryPort
 
     def __enter__(self) -> Self: ...
 

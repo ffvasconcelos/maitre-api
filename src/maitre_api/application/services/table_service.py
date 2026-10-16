@@ -32,6 +32,3 @@ class TableService:
     def list_tables(self) -> list[Table]:
         with self._uow as uow:
             return uow.tables.list()
-
-    def _allow_table_creation(self, table: TableCreate, uow: UnitOfWork) -> bool:
-        return uow.tables.get_by_number(table.number) is None

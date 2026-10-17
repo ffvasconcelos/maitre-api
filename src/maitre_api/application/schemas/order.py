@@ -26,12 +26,6 @@ class OrderFilter(BaseModel):
     table_id: UUID | None
     status: OrderStatus | None
 
-
-class OrderUpdate(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    status: OrderStatus | None
-
 class OrderItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

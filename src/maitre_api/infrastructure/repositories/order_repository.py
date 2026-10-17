@@ -32,9 +32,9 @@ class OrderRepository:
         )
 
     def add(self, data: Order) -> Order:
-        new_order = self.session.add(data)
+        self.session.add(data)
         self.session.flush()
-        return new_order
+        return data
 
     def list(self, filter: OrderFilter) -> list[Order]:
         statement = select(Order)

@@ -3,7 +3,8 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from maitre_api.application.schemas.order import OrderCreate, OrderFilter, OrderUpdate
+from maitre_api.application.schemas.order import OrderFilter
+from maitre_api.domain.enums.order_status import OrderStatus
 from maitre_api.infrastructure.database.models.order import Order
 
 
@@ -14,10 +15,15 @@ class OrderRepository:
     def get_by_id(self, id: uuid.UUID) -> Order | None:
         return self.session.get(Order, id)
 
-    def create(self, data: OrderCreate) -> Order:
-        new_order = Order(table_id=data.table_id)
+    def get_open_by_table_id(self, table_id: uuid.UUID) -> Order | None:
+        return self.session.scalar(
+            select(Order).where(
+                Order.table_id == table_id, Order.status == OrderStatus.OPEN
+            )
+        )
 
-        self.session.add(new_order)
+    def add(self, data: Order) -> Order:
+        new_order = self.session.add(data)
         self.session.flush()
         return new_order
 
@@ -28,20 +34,6 @@ class OrderRepository:
 
         for key, value in params.items():
             statement = statement.where(getattr(Order, key) == value)
-        
+
         return self.session.scalars(statement).all()
 
-    def update(self, id: uuid.UUID, data: OrderUpdate) -> Order:
-        order = self.get_by_id(Order, id)
-
-        if order is None:
-            return None
-
-        changes = data.model_dump(exclude_unset=True)
-
-        for key, value in changes.items():
-            setattr(order, key, value)
-
-        self.session.flush()
-        return order
-        

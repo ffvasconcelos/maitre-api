@@ -1,11 +1,12 @@
 import uuid
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from maitre_api.application.schemas.order import OrderFilter
 from maitre_api.domain.enums.order_status import OrderStatus
 from maitre_api.infrastructure.database.models.order import Order
+from maitre_api.infrastructure.database.models.order_item import OrderItem
 
 
 class OrderRepository:
@@ -13,7 +14,15 @@ class OrderRepository:
         self.session = session
 
     def get_by_id(self, id: uuid.UUID) -> Order | None:
-        return self.session.get(Order, id)
+        statement = (
+            select(Order)
+            .options(
+                selectinload(Order.items).joinedload(OrderItem.product)
+            )
+            .where(Order.id == id)
+        )
+
+        return self.session.scalars(statement).one_or_none()
 
     def get_open_by_table_id(self, table_id: uuid.UUID) -> Order | None:
         return self.session.scalar(

@@ -23,8 +23,8 @@ class OrderCreate(BaseModel):
 class OrderFilter(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    table_id: UUID | None
-    status: OrderStatus | None
+    table_id: UUID | None = None
+    status: OrderStatus | None = None
 
 class OrderItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -50,5 +50,14 @@ class OrderResponse(BaseModel):
     table_id: UUID
     status: OrderStatus
     items: list[OrderItemResponse]
+    created_at: datetime
+    updated_at: datetime
+
+class OrderListResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    table_id: UUID
+    status: OrderStatus
     created_at: datetime
     updated_at: datetime

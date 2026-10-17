@@ -12,3 +12,10 @@ class TableNotAvaiable(Exception):
         super().__init__(
             f"A mesa {number} já está ocupada."
         )
+
+class TableNotFound(Exception):
+    def __init__(self, id: int) -> None:
+        self.id = id
+        super().__init__(
+            f"Mesa não encontrada ({self.id})."
+        )

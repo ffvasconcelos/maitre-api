@@ -2,7 +2,7 @@ from decimal import Decimal
 from uuid import UUID, uuid4
 
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from maitre_api.infrastructure.database.base import BaseModel
 
@@ -17,3 +17,6 @@ class OrderItem(BaseModel):
         Integer, CheckConstraint("number > 0", name="check_quantity_gt_0")
     )
     unit_price: Mapped[Decimal] = mapped_column(Numeric(10,2), nullable=False)
+
+    order: Mapped["Order"] = relationship(back_populates="items")  # type: ignore # noqa: F821
+    product: Mapped["Product"] = relationship()  # type: ignore # noqa: F821

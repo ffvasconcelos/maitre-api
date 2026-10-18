@@ -35,7 +35,7 @@ class OrderRepository:
         return data
 
     def add_items(self, order: Order, new_items: list[OrderItem]) -> Order:
-        order.items.append(*new_items)
+        order.items.extend(new_items)
         self.session.flush()
         return order
 

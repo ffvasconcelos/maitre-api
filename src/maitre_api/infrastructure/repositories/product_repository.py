@@ -1,7 +1,7 @@
-from sqlalchemy.orm import Session
+import uuid
 
 from sqlalchemy import select
-import uuid
+from sqlalchemy.orm import Session
 
 from maitre_api.application.schemas.product import ProductCreate
 from maitre_api.infrastructure.database.models.product import Product

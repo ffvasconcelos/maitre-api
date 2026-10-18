@@ -49,9 +49,7 @@ def add_order_items(
     response_model=OrderResponse,
     status_code=status.HTTP_200_OK,
 )
-def close_order(
-    order_id: UUID, service: OrderServiceDep
-) -> OrderResponse:
+def close_order(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
     try:
         return service.close_order(order_id)
     except OrderDoesNotExists as e:
@@ -65,9 +63,7 @@ def close_order(
     response_model=OrderResponse,
     status_code=status.HTTP_200_OK,
 )
-def cancel_order(
-    order_id: UUID, service: OrderServiceDep
-) -> OrderResponse:
+def cancel_order(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
     try:
         return service.cancel_order(order_id)
     except OrderDoesNotExists as e:

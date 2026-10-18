@@ -16,9 +16,7 @@ class TableRepository:
         return self.session.get(Table, id)
 
     def get_by_number(self, table_number: int) -> Table | None:
-        return self.session.scalar(select(Table).where(
-            Table.number == table_number
-        ))
+        return self.session.scalar(select(Table).where(Table.number == table_number))
 
     def create(self, data: TableCreate) -> Table:
         new_table = Table(number=data.number, capacity=data.capacity)

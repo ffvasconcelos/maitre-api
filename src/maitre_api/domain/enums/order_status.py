@@ -5,4 +5,3 @@ class OrderStatus(StrEnum):
     OPEN = "Aberto"
     CLOSED = "Fechado"
     CANCELLED = "Cancelado"
-

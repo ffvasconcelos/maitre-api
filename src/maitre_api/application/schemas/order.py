@@ -41,7 +41,7 @@ class OrderItemResponse(BaseModel):
     @property
     def subtotal(self) -> Decimal:
         return self.quantity * self.unit_price
-    
+
     created_at: datetime
     updated_at: datetime
 

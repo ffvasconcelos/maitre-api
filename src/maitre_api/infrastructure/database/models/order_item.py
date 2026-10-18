@@ -16,7 +16,7 @@ class OrderItem(BaseModel):
     quantity: Mapped[Integer] = mapped_column(
         Integer, CheckConstraint("number > 0", name="check_quantity_gt_0")
     )
-    unit_price: Mapped[Decimal] = mapped_column(Numeric(10,2), nullable=False)
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
     order: Mapped["Order"] = relationship(back_populates="items")  # type: ignore # noqa: F821
     product: Mapped["Product"] = relationship()  # type: ignore # noqa: F821

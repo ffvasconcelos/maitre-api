@@ -23,3 +23,5 @@ class Order(BaseModel):
         back_populates="order",
         cascade="all, delete-orphan",
     )
+
+    table: Mapped["Table"] = relationship()  # noqa: F821 # type: ignore

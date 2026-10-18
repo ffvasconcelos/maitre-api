@@ -13,6 +13,7 @@ class OrderItemCreate(BaseModel):
     product_id: UUID
     quantity: int
 
+
 class OrderCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -26,38 +27,40 @@ class OrderFilter(BaseModel):
     table_id: UUID | None = None
     status: OrderStatus | None = None
 
+
 class OrderItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     product_id: UUID
-    product_name: str = Field(
-        validation_alias=AliasPath("product", "name")
-    )
+    product_name: str = Field(validation_alias=AliasPath("product", "name"))
     quantity: int
     unit_price: Decimal
-
 
     @computed_field
     @property
     def subtotal(self) -> Decimal:
         return self.quantity * self.unit_price
 
+
 class OrderResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     table_id: UUID
+    table_number: int = Field(validation_alias=AliasPath("table", "number"))
     status: OrderStatus
     items: list[OrderItemResponse]
     created_at: datetime
     updated_at: datetime
+
 
 class OrderListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     table_id: UUID
+    table_number: int = Field(validation_alias=AliasPath("table", "number"))
     status: OrderStatus
     created_at: datetime
     updated_at: datetime

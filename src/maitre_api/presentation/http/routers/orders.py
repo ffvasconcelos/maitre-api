@@ -6,9 +6,11 @@ from fastapi import APIRouter, HTTPException, Query, status
 from maitre_api.application.schemas.order import (
     OrderCreate,
     OrderFilter,
+    OrderItemCreate,
     OrderListResponse,
     OrderResponse,
 )
+from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
 from maitre_api.domain.exceptions.table import TableNotAvaiable, TableNotFound
 from maitre_api.presentation.http.dependencies import OrderServiceDep
@@ -23,6 +25,22 @@ def create_order(order: OrderCreate, service: OrderServiceDep) -> OrderResponse:
     except (ProductNotActive, TableNotAvaiable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except (ProductNotFound, TableNotFound) as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+
+
+@router.post(
+    "/{order_id}/items",
+    response_model=OrderResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_order_items(
+    order_id: UUID, order_items: list[OrderItemCreate], service: OrderServiceDep
+) -> OrderResponse:
+    try:
+        return service.add_order_items(order_id, order_items)
+    except (ProductNotActive, OrderNotOpen) as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
+    except (ProductNotFound, OrderDoesNotExists) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 

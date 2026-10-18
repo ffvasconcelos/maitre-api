@@ -1,4 +1,4 @@
-import uuid
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
@@ -13,7 +13,7 @@ class OrderRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_by_id(self, id: uuid.UUID) -> Order | None:
+    def get_by_id(self, id: UUID) -> Order | None:
         statement = (
             select(Order)
             .options(
@@ -24,7 +24,7 @@ class OrderRepository:
 
         return self.session.scalars(statement).one_or_none()
 
-    def get_open_by_table_id(self, table_id: uuid.UUID) -> Order | None:
+    def get_open_by_table_id(self, table_id: UUID) -> Order | None:
         return self.session.scalar(
             select(Order).where(
                 Order.table_id == table_id, Order.status == OrderStatus.OPEN
@@ -35,6 +35,11 @@ class OrderRepository:
         self.session.add(data)
         self.session.flush()
         return data
+
+    def add_items(self, order: Order, new_items: list[OrderItem]) -> Order:
+        order.items.append(*new_items)
+        self.session.flush()
+        return order
 
     def list(self, filter: OrderFilter) -> list[Order]:
         statement = select(Order)

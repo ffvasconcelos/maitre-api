@@ -1,3 +1,6 @@
+from uuid import UUID
+
+
 class TableNumberAlreadyExists(Exception):
     def __init__(self, number: int) -> None:
         self.number = number
@@ -14,8 +17,15 @@ class TableNotAvaiable(Exception):
         )
 
 class TableNotFound(Exception):
-    def __init__(self, id: int) -> None:
+    def __init__(self, id: UUID) -> None:
         self.id = id
         super().__init__(
             f"Mesa não encontrada ({self.id})."
+        )
+
+class TableNumberNotFound(Exception):
+    def __init__(self, number: int) -> None:
+        self.number = number
+        super().__init__(
+            f"Número da mesa não encontrado ({self.number})."
         )

@@ -2,8 +2,11 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+import pytest
+
 from maitre_api.application.schemas.product import ProductCreate
 from maitre_api.application.services.product_service import ProductService
+from maitre_api.domain.exceptions.product import ProductNotFound
 from maitre_api.infrastructure.database.models.product import Product
 
 
@@ -48,4 +51,16 @@ def test_list_products_returns_repository_results_without_committing() -> None:
 
     assert result is products
     uow.products.list.assert_called_once_with()
+    uow.commit.assert_not_called()
+
+
+def test_get_product_raises_when_product_does_not_exist() -> None:
+    service, uow = make_service()
+    product_id = uuid4()
+    uow.products.get_by_id.return_value = None
+
+    with pytest.raises(ProductNotFound):
+        service.get_product(product_id)
+
+    uow.products.get_by_id.assert_called_once_with(product_id)
     uow.commit.assert_not_called()

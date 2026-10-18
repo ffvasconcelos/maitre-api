@@ -25,6 +25,7 @@ build-backend = "uv_build"
 dev = [
     "httpx",
     "pytest",
+    "pytest-cov",
     "ruff",
 ]
 
@@ -37,3 +38,6 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.pytest.ini_options]
+addopts = "--cov=maitre_api --cov-report=term-missing --cov-fail-under=90"

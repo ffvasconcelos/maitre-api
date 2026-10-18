@@ -89,10 +89,4 @@ def get_order_by_id(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
             detail=str(e),
         ) from e
 
-    if order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Order not found",
-        )
-
     return order

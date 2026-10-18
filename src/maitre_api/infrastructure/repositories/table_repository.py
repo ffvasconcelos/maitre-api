@@ -33,8 +33,7 @@ class TableRepository:
         self.session.flush()
         return table
 
-    def free_table(self, id: uuid.UUID) -> Table:
-        table = self.session.get(Table, id)
+    def free_table(self, table: Table) -> Table:
         table.status = TableStatus.AVAIALABLE
         self.session.flush()
         return table

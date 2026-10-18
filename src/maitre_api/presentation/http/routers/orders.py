@@ -44,6 +44,38 @@ def add_order_items(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
+@router.post(
+    "/{order_id}/close",
+    response_model=OrderResponse,
+    status_code=status.HTTP_200_OK,
+)
+def close_order(
+    order_id: UUID, service: OrderServiceDep
+) -> OrderResponse:
+    try:
+        return service.close_order(order_id)
+    except OrderDoesNotExists as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    except OrderNotOpen as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
+
+
+@router.post(
+    "/{order_id}/cancel",
+    response_model=OrderResponse,
+    status_code=status.HTTP_200_OK,
+)
+def cancel_order(
+    order_id: UUID, service: OrderServiceDep
+) -> OrderResponse:
+    try:
+        return service.cancel_order(order_id)
+    except OrderDoesNotExists as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    except OrderNotOpen as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
+
+
 @router.get("", response_model=list[OrderListResponse], status_code=status.HTTP_200_OK)
 def list_orders(
     filter: Annotated[OrderFilter, Query()], service: OrderServiceDep

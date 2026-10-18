@@ -16,9 +16,7 @@ class OrderRepository:
     def get_by_id(self, id: UUID) -> Order | None:
         statement = (
             select(Order)
-            .options(
-                selectinload(Order.items).joinedload(OrderItem.product)
-            )
+            .options(selectinload(Order.items).joinedload(OrderItem.product))
             .where(Order.id == id)
         )
 
@@ -51,3 +49,14 @@ class OrderRepository:
 
         return self.session.scalars(statement).all()
 
+    def close(self, order: Order) -> Order:
+        order.status = OrderStatus.CLOSED
+        self.session.flush()
+
+        return order
+
+    def cancel(self, order: Order) -> Order:
+        order.status = OrderStatus.CANCELLED
+        self.session.flush()
+
+        return order

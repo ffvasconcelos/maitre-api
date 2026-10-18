@@ -69,6 +69,36 @@ class OrderService:
         with self._uow as uow:
             return uow.orders.list(filter)
 
+    def close_order(self, id: UUID) -> Order:
+        with self._uow as uow:
+            order = uow.orders.get_by_id(id)
+
+            if order is None:
+                raise OrderDoesNotExists(id)
+            elif order.status != OrderStatus.OPEN:
+                raise OrderNotOpen(id)
+
+            closed_order = uow.orders.close(order)
+            uow.tables.free_table(order.table)
+            uow.commit()
+
+            return closed_order
+
+    def cancel_order(self, id: UUID) -> Order:
+        with self._uow as uow:
+            order = uow.orders.get_by_id(id)
+
+            if order is None:
+                raise OrderDoesNotExists(id)
+            elif order.status != OrderStatus.OPEN:
+                raise OrderNotOpen(id)
+
+            canceled_order = uow.orders.cancel(order)
+            uow.tables.free_table(order.table)
+            uow.commit()
+
+            return canceled_order
+
     # Private functions
     def _assemble_items(
         self, uow: UnitOfWork, order_items: list[OrderItemCreate]

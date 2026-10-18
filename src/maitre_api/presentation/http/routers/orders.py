@@ -81,7 +81,13 @@ def list_orders(
 
 @router.get("/{order_id}", response_model=OrderResponse, status_code=status.HTTP_200_OK)
 def get_order_by_id(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
-    order = service.get_order_by_id(order_id)
+    try:
+        order = service.get_order_by_id(order_id)
+    except OrderDoesNotExists as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
 
     if order is None:
         raise HTTPException(

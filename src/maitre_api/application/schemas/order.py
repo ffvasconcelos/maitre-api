@@ -11,7 +11,7 @@ class OrderItemCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     product_id: UUID
-    quantity: int
+    quantity: int = Field(gt=0)
 
 
 class OrderCreate(BaseModel):

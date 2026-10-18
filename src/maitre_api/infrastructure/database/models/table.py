@@ -20,7 +20,7 @@ class Table(BaseModel):
     )
     capacity: Mapped[Integer] = mapped_column(
         Integer,
-        CheckConstraint("number > 0", name="check_capacity_number_gt_0"),
+        CheckConstraint("capacity > 0", name="check_capacity_number_gt_0"),
         nullable=False,
         default=2,
     )

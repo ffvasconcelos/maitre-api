@@ -1,4 +1,4 @@
-import uuid
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -12,8 +12,16 @@ class TableRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_by_id(self, id: uuid.UUID) -> Table | None:
+    def get_by_id(self, id: UUID) -> Table | None:
         return self.session.get(Table, id)
+
+    def get_by_id_for_update(self, id: UUID) -> Table | None:
+        statement = (
+            select(Table)
+            .where(Table.id == id)
+            .with_for_update()
+        )
+        return self.session.scalar(statement)
 
     def get_by_number(self, table_number: int) -> Table | None:
         return self.session.scalar(select(Table).where(Table.number == table_number))
@@ -25,7 +33,7 @@ class TableRepository:
         self.session.flush()
         return new_table
 
-    def occupy_table(self, id: uuid.UUID) -> Table:
+    def occupy_table(self, id: UUID) -> Table:
         table = self.session.get(Table, id)
         table.status = TableStatus.OCCUPIED
         self.session.flush()

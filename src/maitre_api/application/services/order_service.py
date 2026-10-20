@@ -21,7 +21,7 @@ class OrderService:
 
     def create_order(self, order_create: OrderCreate) -> Order:
         with self._uow as uow:
-            table = uow.tables.get_by_id(order_create.table_id)
+            table = uow.tables.get_by_id_for_update(order_create.table_id)
 
             if table is None:
                 raise TableNotFound(order_create.table_id)

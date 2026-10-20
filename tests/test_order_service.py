@@ -29,7 +29,7 @@ def test_create_order_occupies_table_and_snapshots_product_price() -> None:
     product_id = uuid4()
     table = MagicMock(status=TableStatus.AVAIALABLE, number=7)
     product = MagicMock(active=True, price=Decimal("8.50"))
-    uow.tables.get_by_id.return_value = table
+    uow.tables.get_by_id_for_update.return_value = table
     uow.products.get_by_id.return_value = product
     order_data = OrderCreate(
         table_id=table_id,
@@ -46,17 +46,19 @@ def test_create_order_occupies_table_and_snapshots_product_price() -> None:
     assert result.items[0].quantity == 2
     assert result.items[0].unit_price == Decimal("8.50")
     uow.tables.occupy_table.assert_called_once_with(table_id)
+    uow.tables.get_by_id_for_update.assert_called_once_with(table_id)
     uow.commit.assert_called_once_with()
 
 
 def test_create_order_rejects_missing_table() -> None:
     service, uow = make_service()
     table_id = uuid4()
-    uow.tables.get_by_id.return_value = None
+    uow.tables.get_by_id_for_update.return_value = None
 
     with pytest.raises(TableNotFound):
         service.create_order(OrderCreate(table_id=table_id, items=[]))
 
+    uow.tables.get_by_id_for_update.assert_called_once_with(table_id)
     uow.tables.occupy_table.assert_not_called()
     uow.commit.assert_not_called()
 
@@ -64,11 +66,14 @@ def test_create_order_rejects_missing_table() -> None:
 def test_create_order_rejects_occupied_table() -> None:
     service, uow = make_service()
     table_id = uuid4()
-    uow.tables.get_by_id.return_value = MagicMock(status=TableStatus.OCCUPIED, number=7)
+    uow.tables.get_by_id_for_update.return_value = MagicMock(
+        status=TableStatus.OCCUPIED, number=7
+    )
 
     with pytest.raises(TableNotAvaiable):
         service.create_order(OrderCreate(table_id=table_id, items=[]))
 
+    uow.tables.get_by_id_for_update.assert_called_once_with(table_id)
     uow.tables.occupy_table.assert_not_called()
     uow.commit.assert_not_called()
 
@@ -78,7 +83,9 @@ def test_create_order_requires_existing_active_products(active: bool) -> None:
     service, uow = make_service()
     table_id = uuid4()
     product_id = uuid4()
-    uow.tables.get_by_id.return_value = MagicMock(status=TableStatus.AVAIALABLE)
+    uow.tables.get_by_id_for_update.return_value = MagicMock(
+        status=TableStatus.AVAIALABLE
+    )
     uow.products.get_by_id.return_value = (
         MagicMock(active=True, price=Decimal("2.00")) if active else None
     )
@@ -96,6 +103,7 @@ def test_create_order_requires_existing_active_products(active: bool) -> None:
         with pytest.raises(ProductNotActive):
             service.create_order(order_data)
 
+    uow.tables.get_by_id_for_update.assert_called_once_with(table_id)
     uow.orders.add.assert_not_called()
     uow.commit.assert_not_called()
 

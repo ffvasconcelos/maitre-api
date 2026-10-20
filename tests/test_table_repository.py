@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 from sqlalchemy import select
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 
 from maitre_api.application.schemas.table import TableCreate
@@ -23,6 +24,20 @@ def test_get_by_id_uses_session_lookup() -> None:
 
     assert repository.get_by_id(table_id) is table
     session.get.assert_called_once_with(Table, table_id)
+
+
+def test_get_by_id_for_update_locks_matching_table() -> None:
+    repository, session = make_repository()
+    table_id = uuid4()
+    table = Table(number=2, capacity=4)
+    session.scalar.return_value = table
+
+    assert repository.get_by_id_for_update(table_id) is table
+
+    statement = session.scalar.call_args.args[0]
+    compiled = str(statement.compile(dialect=postgresql.dialect()))
+    assert "WHERE tables.id = %(id_1)s" in compiled
+    assert compiled.endswith("FOR UPDATE")
 
 
 def test_get_by_number_queries_matching_number() -> None:

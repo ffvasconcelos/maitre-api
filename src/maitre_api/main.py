@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from sqlalchemy import text
 
 from maitre_api.presentation.http.dependencies import DBSession
@@ -25,4 +25,6 @@ def health_check_db(session: DBSession) -> dict[str, str]:
         session.execute(text("SELECT 1"))
         return {"status": "ok"}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
+        ) from e

@@ -76,17 +76,19 @@ def cancel_order(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
 def list_orders(
     filter: Annotated[OrderFilter, Query()], service: OrderServiceDep
 ) -> list[OrderListResponse]:
-    return service.list_orders(filter)
+    try:
+        return service.list_orders(filter)
+    except OrderDoesNotExists as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
 @router.get("/{order_id}", response_model=OrderResponse, status_code=status.HTTP_200_OK)
 def get_order_by_id(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
     try:
         order = service.get_order_by_id(order_id)
+        return order
     except OrderDoesNotExists as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),
         ) from e
-
-    return order

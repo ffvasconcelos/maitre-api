@@ -16,7 +16,7 @@ class ProductService:
             uow.commit()
             return product
 
-    def get_product(self, product_id: UUID) -> Product | None:
+    def get_product(self, product_id: UUID) -> Product:
         with self._uow as uow:
             product = uow.products.get_by_id(product_id)
 

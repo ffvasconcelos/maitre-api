@@ -263,14 +263,3 @@ def test_get_existing_order_returns_order_response() -> None:
 
     assert response.status_code == 200
     assert response.json()["id"] == order["id"]
-
-
-def test_get_order_returns_404_when_service_returns_none() -> None:
-    service = MagicMock(spec=OrderService)
-    service.get_order_by_id.return_value = None
-    install_service(get_order_service, service)
-
-    response = client.get(f"/orders/{uuid4()}")
-
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Order not found"

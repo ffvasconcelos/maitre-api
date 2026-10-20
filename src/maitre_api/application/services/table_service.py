@@ -25,7 +25,7 @@ class TableService:
             uow.commit()
             return table
 
-    def get_table_by_id(self, table_id: UUID) -> Table | None:
+    def get_table_by_id(self, table_id: UUID) -> Table:
         with self._uow as uow:
             table = uow.tables.get_by_id(table_id)
 

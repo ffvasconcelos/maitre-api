@@ -39,7 +39,7 @@ class OrderService:
             uow.commit()
             return order
 
-    def get_order_by_id(self, order_id: UUID) -> Order | None:
+    def get_order_by_id(self, order_id: UUID) -> Order:
         with self._uow as uow:
             order = uow.orders.get_by_id(order_id)
 

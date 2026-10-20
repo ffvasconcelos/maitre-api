@@ -1,6 +1,6 @@
 # Maitre API
 
-The **Maitre API** is the backend for **Maitre**, an order management system designed for restaurants, coffee shops, snack bars, and other food-services businesses.
+The **Maitre API** is the backend for **Maitre**, an order management system designed for restaurants, coffee shops, snack bars, and other food-service businesses.
 
 > 🚧 **Work in Progress (WIP)**
 > 
@@ -10,14 +10,14 @@ The **Maitre API** is the backend for **Maitre**, an order management system des
 
 The name **Maitre** is inspired by the French term [*maître d'hôtel*][maitre-d], which refers to the person in charge of a restaurant.
 
-The project was inspired by [Restaurante UAI][uai], my family's 35-year-old business in the heart of Minas Gerais, where I grew up, worked and faced many day-to-day challenges. I wanted to draw on these experiences and my knowledge to build a solution that could make the order workflows simpler and more efficient.
+The project was inspired by [Restaurante UAI][uai], my family's 35-year-old business in the heart of Minas Gerais, where I grew up, worked, and faced many day-to-day challenges. I wanted to draw on these experiences and my knowledge to build a solution that could make order workflows simpler and more efficient.
 
 ## Features
 
 - Manage tables;
 - Manage products;
 - Create orders;
-- Add products to client's orders;
+- Add products to clients' orders;
 - Finish orders;
 - Automatically update table states.
 
@@ -27,7 +27,7 @@ The project was inspired by [Restaurante UAI][uai], my family's 35-year-old busi
 The project uses the following technologies to build a backend application.
 
 - Python - Programming language;
-- PostgreSQL - API framework;
+- PostgreSQL - Database;
 - uv - Dependency and project management;
 - Alembic - Database migrations;
 - FastAPI - API framework;
@@ -86,7 +86,7 @@ Start the development server from the repository root:
 uv run uvicorn maitre_api.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-The API is avaialable at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+The API is available at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 ### Running Tests
 
@@ -102,23 +102,23 @@ Pytest also reports code coverage and enforces the project's 90% coverage thresh
 
 ### Swagger
 
-The Swagger API documentation is avaiable on `http://127.0.0.1:8000/docs`.
+The Swagger API documentation is available at `http://127.0.0.1:8000/docs`.
 
 ### Bruno
 
-[Bruno][bruno] is a Git-friendly open-source API client, that makes easier to manage API references, version, and share API collections using Git
+[Bruno][bruno] is a Git-friendly, open-source API client that makes it easier to manage, version, and share API collections using Git.
 
-This project's API reference created using Bruno is avaiable in the repo [maitre-api-reference][api-ref].
+This project's API reference, created using Bruno, is available in the [maitre-api-reference][api-ref] repository.
 
 ## Roadmap
 
-1. Stabilization and Architectural improvements;
-2. QA Automation and CI/CD Pipeline Implementation;
+1. Stabilization and architectural improvements;
+2. QA automation and CI/CD pipeline implementation;
 3. New features:
-    - User Registration and Authentication;
-    - Role-Based Access Control (RBAC);
-    - Multi-Tenant Support.
-4. Web Application Development and Production Deployment.
+    - User registration and authentication;
+    - Role-based access control (RBAC);
+    - Multi-tenant support.
+4. Web application development and production deployment.
 
 
 [uai]: https://www.google.com/maps/place/Restaurante+Uai/@-19.9595986,-43.4148184,17z/data=!3m1!4b1!4m6!3m5!1s0xa44929e6f0ab8f:0x267ed0df4d2c0dbc!8m2!3d-19.9595986!4d-43.4148184!16s%2Fg%2F1yfjhdm8k?entry=ttu&g_ep=EgoyMDI2MTAxMy4wIKXMDSoASAFQAw%3D%3D

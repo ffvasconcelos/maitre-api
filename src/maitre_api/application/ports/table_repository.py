@@ -2,7 +2,7 @@ import uuid
 from typing import Protocol
 
 from maitre_api.application.schemas.table import TableCreate
-from maitre_api.infrastructure.database.models.table import Table
+from maitre_api.domain.entities.table import Table
 
 
 class TableRepositoryPort(Protocol):

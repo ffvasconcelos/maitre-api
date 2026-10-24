@@ -6,13 +6,13 @@ from maitre_api.application.schemas.order import (
     OrderFilter,
     OrderItemCreate,
 )
+from maitre_api.domain.entities.order import Order
+from maitre_api.domain.entities.order_item import OrderItem
 from maitre_api.domain.enums import TableStatus
 from maitre_api.domain.enums.order_status import OrderStatus
 from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
 from maitre_api.domain.exceptions.table import TableNotAvaiable, TableNotFound
-from maitre_api.infrastructure.database.models.order import Order
-from maitre_api.infrastructure.database.models.order_item import OrderItem
 
 
 class OrderService:
@@ -32,7 +32,7 @@ class OrderService:
 
             order = uow.orders.add(
                 Order(
-                    table_id=order_create.table_id,
+                    table=table,
                     items=self._assemble_items(uow, order_create.items),
                 )
             )

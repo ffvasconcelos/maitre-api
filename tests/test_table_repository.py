@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from maitre_api.application.schemas.table import TableCreate
+from maitre_api.domain.entities.table import Table as TableEntity
 from maitre_api.domain.enums import TableStatus
 from maitre_api.domain.exceptions.table import TableNumberAlreadyExists
 from maitre_api.infrastructure.database.models.table import Table
@@ -29,7 +30,13 @@ def test_get_by_id_queries_matching_table(for_update: bool, found: bool) -> None
     table = Table(number=2, capacity=4) if found else None
     session.scalar.return_value = table
 
-    assert repository.get_by_id(table_id, for_update=for_update) is table
+    result = repository.get_by_id(table_id, for_update=for_update)
+    if found:
+        assert isinstance(result, TableEntity)
+        assert result.number == table.number
+        assert result.capacity == table.capacity
+    else:
+        assert result is None
 
     session.scalar.assert_called_once()
     statement = session.scalar.call_args.args[0]
@@ -46,7 +53,13 @@ def test_get_by_number_queries_matching_number(for_update: bool, found: bool) ->
     table = Table(number=2, capacity=4) if found else None
     session.scalar.return_value = table
 
-    assert repository.get_by_number(2, for_update=for_update) is table
+    result = repository.get_by_number(2, for_update=for_update)
+    if found:
+        assert isinstance(result, TableEntity)
+        assert result.number == table.number
+        assert result.capacity == table.capacity
+    else:
+        assert result is None
 
     session.scalar.assert_called_once()
     statement = session.scalar.call_args.args[0]
@@ -75,7 +88,11 @@ def test_create_adds_and_flushes_table() -> None:
 
     assert result.number == 2
     assert result.capacity == 4
-    session.add.assert_called_once_with(result)
+    assert isinstance(result, TableEntity)
+    model = session.add.call_args.args[0]
+    assert isinstance(model, Table)
+    assert model.number == result.number
+    assert model.capacity == result.capacity
     session.flush.assert_called_once_with()
 
 
@@ -122,13 +139,16 @@ def test_create_preserves_unrelated_integrity_errors(original: Exception) -> Non
 
 def test_occupy_and_free_update_table_status() -> None:
     repository, session = make_repository()
-    table = Table(number=2, capacity=4)
+    table = TableEntity(number=2, capacity=4)
+    model = Table(id=table.id, number=2, capacity=4)
+    session.get.return_value = model
 
     assert repository.occupy_table(table) is table
     assert table.status == TableStatus.OCCUPIED
     assert repository.free_table(table) is table
     assert table.status == TableStatus.AVAIALABLE
-    session.get.assert_not_called()
+    assert model.status == TableStatus.AVAIALABLE
+    session.get.assert_called_with(Table, table.id)
     assert session.flush.call_count == 2
 
 
@@ -137,7 +157,10 @@ def test_list_orders_tables_by_number_ascending() -> None:
     tables = [Table(number=1, capacity=2)]
     session.scalars.return_value.all.return_value = tables
 
-    assert repository.list() is tables
+    result = repository.list()
+    assert len(result) == 1
+    assert isinstance(result[0], TableEntity)
+    assert result[0].number == tables[0].number
     assert str(session.scalars.call_args.args[0]) == str(
         select(Table).order_by(Table.number.asc())
     )

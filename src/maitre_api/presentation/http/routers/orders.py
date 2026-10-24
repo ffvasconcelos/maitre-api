@@ -10,10 +10,10 @@ from maitre_api.application.schemas.order import (
     OrderListResponse,
     OrderResponse,
 )
+from maitre_api.domain.entities.order import Order
 from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
 from maitre_api.domain.exceptions.table import TableNotAvaiable, TableNotFound
-from maitre_api.infrastructure.database.models.order import Order
 from maitre_api.presentation.http.dependencies import OrderServiceDep
 
 router = APIRouter(prefix="/orders", tags=["Orders"])

@@ -31,6 +31,8 @@ def test_locked_read_refreshes_preloaded_table_status(
 
     key = table_id if lookup == "get_by_id" else table_number
     with factory() as stale_session:
+        cached_model = stale_session.get(Table, table_id)
+        assert cached_model.status == TableStatus.AVAIALABLE
         repository = TableRepository(stale_session)
         cached_table = getattr(repository, lookup)(key)
         assert cached_table.status == TableStatus.AVAIALABLE
@@ -42,6 +44,7 @@ def test_locked_read_refreshes_preloaded_table_status(
 
         refreshed = getattr(repository, lookup)(key, for_update=True)
         assert refreshed.status == TableStatus.OCCUPIED
+        assert cached_model.status == TableStatus.OCCUPIED
         assert refreshed.id == table_id
         assert refreshed.number == table_number
 

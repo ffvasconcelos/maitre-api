@@ -2,12 +2,12 @@ from uuid import UUID
 
 from maitre_api.application.ports.unit_of_work import UnitOfWork
 from maitre_api.application.schemas.table import TableCreate
+from maitre_api.domain.entities.table import Table
 from maitre_api.domain.exceptions.table import (
     TableNotFound,
     TableNumberAlreadyExists,
     TableNumberNotFound,
 )
-from maitre_api.infrastructure.database.models.table import Table
 
 
 class TableService:

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from maitre_api.application.schemas.order import OrderCreate, OrderItemCreate
 from maitre_api.application.services.order_service import OrderService
+from maitre_api.domain.entities.order import Order as OrderEntity
 from maitre_api.domain.enums import OrderStatus, TableStatus
 from maitre_api.domain.exceptions.order import OrderNotOpen
 from maitre_api.infrastructure.database.models.order import Order
@@ -38,7 +39,9 @@ def order_context(
         return table.id, order.id, product.id
 
 
-def mutate(session: Session, operation: str, order_id: UUID, product_id: UUID) -> Order:
+def mutate(
+    session: Session, operation: str, order_id: UUID, product_id: UUID
+) -> OrderEntity:
     service = OrderService(SqlAlchemyUnitOfWork(session))
     if operation == "add_order_items":
         return service.add_order_items(
@@ -137,6 +140,8 @@ def test_preloaded_order_cannot_change_a_reoccupied_table(
     factory = integration_session_factory
     table_id, order_id, product_id = order_context
     with factory() as stale_session:
+        cached_model = stale_session.get(Order, order_id)
+        assert cached_model.status == OrderStatus.OPEN
         cached_order = OrderRepository(stale_session).get_by_id(order_id)
         assert cached_order.status == OrderStatus.OPEN
         with factory() as session:
@@ -149,6 +154,7 @@ def test_preloaded_order_cannot_change_a_reoccupied_table(
 
         with pytest.raises(OrderNotOpen):
             mutate(stale_session, operation, order_id, product_id)
+        assert cached_model.status == OrderStatus.CLOSED
 
     with factory() as session:
         original = OrderRepository(session).get_by_id(order_id)
@@ -200,6 +206,8 @@ def test_locked_read_refreshes_preloaded_items(
     key = order_id if lookup == "get_by_id" else table_id
 
     with factory() as stale_session:
+        cached_model = stale_session.get(Order, order_id)
+        assert cached_model.items == []
         cached_order = getattr(OrderRepository(stale_session), lookup)(key)
         assert cached_order.items == []
 
@@ -211,6 +219,7 @@ def test_locked_read_refreshes_preloaded_items(
         )
 
         assert refreshed.status == OrderStatus.OPEN
+        assert len(cached_model.items) == 1
         assert len(refreshed.items) == 1
         assert refreshed.items[0].product_id == product_id
         assert refreshed.items[0].quantity == 2

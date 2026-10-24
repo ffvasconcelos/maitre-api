@@ -3,8 +3,8 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status
 
 from maitre_api.application.schemas.product import ProductCreate, ProductResponse
+from maitre_api.domain.entities.product import Product
 from maitre_api.domain.exceptions.product import ProductNotFound
-from maitre_api.infrastructure.database.models.product import Product
 from maitre_api.presentation.http.dependencies import ProductServiceDep
 
 router = APIRouter(prefix="/products", tags=["Products"])

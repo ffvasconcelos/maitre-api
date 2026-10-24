@@ -6,8 +6,8 @@ import pytest
 
 from maitre_api.application.schemas.product import ProductCreate
 from maitre_api.application.services.product_service import ProductService
+from maitre_api.domain.entities.product import Product
 from maitre_api.domain.exceptions.product import ProductNotFound
-from maitre_api.infrastructure.database.models.product import Product
 
 
 def make_service() -> tuple[ProductService, MagicMock]:

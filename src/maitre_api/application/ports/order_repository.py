@@ -2,8 +2,8 @@ import uuid
 from typing import Protocol
 
 from maitre_api.application.schemas.order import OrderFilter
-from maitre_api.infrastructure.database.models.order import Order
-from maitre_api.infrastructure.database.models.order_item import OrderItem
+from maitre_api.domain.entities.order import Order
+from maitre_api.domain.entities.order_item import OrderItem
 
 
 class OrderRepositoryPort(Protocol):

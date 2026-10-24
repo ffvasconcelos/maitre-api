@@ -3,12 +3,12 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status
 
 from maitre_api.application.schemas.table import TableCreate, TableResponse
+from maitre_api.domain.entities.table import Table
 from maitre_api.domain.exceptions.table import (
     TableNotFound,
     TableNumberAlreadyExists,
     TableNumberNotFound,
 )
-from maitre_api.infrastructure.database.models.table import Table
 from maitre_api.presentation.http.dependencies import TableServiceDep
 
 router = APIRouter(prefix="/tables", tags=["Tables"])

@@ -2,8 +2,8 @@ from uuid import UUID
 
 from maitre_api.application.ports.unit_of_work import UnitOfWork
 from maitre_api.application.schemas.product import ProductCreate
+from maitre_api.domain.entities.product import Product
 from maitre_api.domain.exceptions.product import ProductNotFound
-from maitre_api.infrastructure.database.models.product import Product
 
 
 class ProductService:

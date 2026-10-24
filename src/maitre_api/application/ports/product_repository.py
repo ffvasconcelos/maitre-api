@@ -2,7 +2,7 @@ from typing import Protocol
 from uuid import UUID
 
 from maitre_api.application.schemas.product import ProductCreate
-from maitre_api.infrastructure.database.models.product import Product
+from maitre_api.domain.entities.product import Product
 
 
 class ProductRepositoryPort(Protocol):

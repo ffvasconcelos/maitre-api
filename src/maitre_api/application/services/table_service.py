@@ -16,7 +16,9 @@ class TableService:
 
     def create_table(self, table_create: TableCreate) -> Table:
         with self._uow as uow:
-            existing_table = uow.tables.get_by_number(table_create.number)
+            existing_table = uow.tables.get_by_number(
+                table_create.number, for_update=True
+            )
 
             if existing_table is not None:
                 raise TableNumberAlreadyExists(table_create.number)

@@ -1,14 +1,18 @@
+from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
+from threading import Barrier
 from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from maitre_api.domain.enums import TableStatus
+from maitre_api.domain.exceptions.table import TableNumberAlreadyExists
 from maitre_api.infrastructure.database.models.table import Table
+from maitre_api.infrastructure.repositories.table_repository import TableRepository
 from maitre_api.main import app
 from maitre_api.presentation.http.dependencies import get_db
 
@@ -119,3 +123,49 @@ def test_migrated_database_rejects_nonpositive_table_number(
             session.commit()
         session.rollback()
         assert session.scalar(select(Table).where(Table.number == number)) is None
+
+
+def test_concurrent_table_creation_returns_created_and_conflict(
+    database_client: TestClient,
+    integration_session_factory: sessionmaker[Session],
+    monkeypatch,
+) -> None:
+    number = 300_000_000
+    barrier = Barrier(2)
+    original_lookup = TableRepository.get_by_number
+
+    def synchronized_lookup(self, table_number, for_update=False):
+        self.session.execute(text("SET LOCAL lock_timeout = '5s'"))
+        table = original_lookup(self, table_number, for_update=for_update)
+        assert table is None
+        barrier.wait(timeout=5)
+        return table
+
+    payload = {"number": number, "capacity": 4}
+    with monkeypatch.context() as concurrent_patch:
+        concurrent_patch.setattr(TableRepository, "get_by_number", synchronized_lookup)
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(database_client.post, "/tables", json=payload)
+                for _ in range(2)
+            ]
+            responses = [future.result(timeout=10) for future in futures]
+
+    assert sorted(response.status_code for response in responses) == [201, 409]
+    conflict = next(response for response in responses if response.status_code == 409)
+    assert conflict.json() == {"detail": str(TableNumberAlreadyExists(number))}
+    with integration_session_factory() as session:
+        assert (
+            session.scalar(
+                select(func.count()).select_from(Table).where(Table.number == number)
+            )
+            == 1
+        )
+
+    assert database_client.post("/tables", json=payload).status_code == 409
+    assert (
+        database_client.post(
+            "/tables", json={"number": number + 1, "capacity": 4}
+        ).status_code
+        == 201
+    )

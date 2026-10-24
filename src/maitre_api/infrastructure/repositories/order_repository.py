@@ -13,21 +13,33 @@ class OrderRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_by_id(self, id: UUID) -> Order | None:
+    def get_by_id(self, id: UUID, for_update: bool = False) -> Order | None:
         statement = (
             select(Order)
             .options(selectinload(Order.items).joinedload(OrderItem.product))
             .where(Order.id == id)
         )
 
+        if for_update:
+            statement = statement.with_for_update().execution_options(
+                populate_existing=True
+            )
+
         return self.session.scalars(statement).one_or_none()
 
-    def get_open_by_table_id(self, table_id: UUID) -> Order | None:
-        return self.session.scalar(
-            select(Order).where(
-                Order.table_id == table_id, Order.status == OrderStatus.OPEN
-            )
+    def get_open_by_table_id(
+        self, table_id: UUID, for_update: bool = False
+    ) -> Order | None:
+        statement = select(Order).where(
+            Order.table_id == table_id, Order.status == OrderStatus.OPEN
         )
+
+        if for_update:
+            statement = statement.with_for_update().execution_options(
+                populate_existing=True
+            )
+
+        return self.session.scalar(statement)
 
     def add(self, data: Order) -> Order:
         self.session.add(data)

@@ -145,6 +145,7 @@ def test_add_order_items_appends_validated_items_and_commits() -> None:
     assert len(appended_items) == 1
     assert appended_items[0].quantity == 3
     assert appended_items[0].unit_price == Decimal("4.25")
+    uow.orders.get_by_id.assert_called_once_with(order_id, for_update=True)
     uow.commit.assert_called_once_with()
 
 
@@ -203,6 +204,7 @@ def test_finish_order_updates_status_and_frees_table(
     assert getattr(service, operation)(order_id) is order
 
     repository_action.assert_called_once_with(order)
+    uow.orders.get_by_id.assert_called_once_with(order_id, for_update=True)
     assert order.status == expected_status
     uow.tables.free_table.assert_called_once_with(table)
     uow.commit.assert_called_once_with()

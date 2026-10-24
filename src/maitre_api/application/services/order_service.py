@@ -52,7 +52,7 @@ class OrderService:
         self, order_id: UUID, order_items: list[OrderItemCreate]
     ) -> Order:
         with self._uow as uow:
-            order = uow.orders.get_by_id(order_id)
+            order = uow.orders.get_by_id(order_id, for_update=True)
 
             if order is None:
                 raise OrderDoesNotExists(order_id)
@@ -71,7 +71,7 @@ class OrderService:
 
     def close_order(self, id: UUID) -> Order:
         with self._uow as uow:
-            order = uow.orders.get_by_id(id)
+            order = uow.orders.get_by_id(id, for_update=True)
 
             if order is None:
                 raise OrderDoesNotExists(id)
@@ -86,7 +86,7 @@ class OrderService:
 
     def cancel_order(self, id: UUID) -> Order:
         with self._uow as uow:
-            order = uow.orders.get_by_id(id)
+            order = uow.orders.get_by_id(id, for_update=True)
 
             if order is None:
                 raise OrderDoesNotExists(id)

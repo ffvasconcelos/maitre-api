@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from maitre_api.application.schemas.order import OrderCreate
 from maitre_api.application.services.order_service import OrderService
 from maitre_api.domain.enums import OrderStatus
-from maitre_api.domain.exceptions.table import TableNotAvaiable
+from maitre_api.domain.exceptions.table import TableNotAvailable
 from maitre_api.infrastructure.database.models.order import Order
 from maitre_api.infrastructure.database.models.table import Table
 from maitre_api.infrastructure.database.unit_of_work import SqlAlchemyUnitOfWork
@@ -88,7 +88,7 @@ def test_table_lock_allows_only_one_concurrent_order(
 
         allow_first_order_commit.set()
         first_order.result(timeout=5)
-        with pytest.raises(TableNotAvaiable):
+        with pytest.raises(TableNotAvailable):
             second_order.result(timeout=5)
 
     with integration_session_factory() as session:

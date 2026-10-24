@@ -25,5 +25,5 @@ class Table(BaseModel):
         default=2,
     )
     status: Mapped[TableStatus] = mapped_column(
-        SqlAlchemyEnum(TableStatus, name="table_status"), default=TableStatus.AVAIALABLE
+        SqlAlchemyEnum(TableStatus, name="table_status"), default=TableStatus.AVAILABLE
     )

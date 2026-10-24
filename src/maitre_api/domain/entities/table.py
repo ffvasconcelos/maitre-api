@@ -8,4 +8,4 @@ from maitre_api.domain.enums import TableStatus
 class Table(Entity):
     number: int
     capacity: int
-    status: TableStatus = TableStatus.AVAIALABLE
+    status: TableStatus = TableStatus.AVAILABLE

@@ -15,9 +15,9 @@ from maitre_api.domain.entities.order import Order
 from maitre_api.domain.entities.product import Product
 from maitre_api.domain.entities.table import Table
 from maitre_api.domain.enums import OrderStatus, TableStatus
-from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
+from maitre_api.domain.exceptions.order import OrderNotFound, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
-from maitre_api.domain.exceptions.table import TableNotAvaiable, TableNotFound
+from maitre_api.domain.exceptions.table import TableNotAvailable, TableNotFound
 
 
 def make_service() -> tuple[OrderService, MagicMock]:
@@ -72,7 +72,7 @@ def test_create_order_rejects_occupied_table() -> None:
     table_id = uuid4()
     uow.tables.get_by_id.return_value = MagicMock(status=TableStatus.OCCUPIED, number=7)
 
-    with pytest.raises(TableNotAvaiable):
+    with pytest.raises(TableNotAvailable):
         service.create_order(OrderCreate(table_id=table_id, items=[]))
 
     uow.tables.get_by_id.assert_called_once_with(table_id, for_update=True)
@@ -85,7 +85,7 @@ def test_create_order_requires_existing_active_products(active: bool) -> None:
     service, uow = make_service()
     table_id = uuid4()
     product_id = uuid4()
-    uow.tables.get_by_id.return_value = MagicMock(status=TableStatus.AVAIALABLE)
+    uow.tables.get_by_id.return_value = MagicMock(status=TableStatus.AVAILABLE)
     uow.products.get_by_id.return_value = (
         MagicMock(active=True, price=Decimal("2.00")) if active else None
     )
@@ -123,7 +123,7 @@ def test_get_order_rejects_missing_order() -> None:
     service, uow = make_service()
     uow.orders.get_by_id.return_value = None
 
-    with pytest.raises(OrderDoesNotExists):
+    with pytest.raises(OrderNotFound):
         service.get_order_by_id(uuid4())
 
 
@@ -154,7 +154,7 @@ def test_add_order_items_rejects_missing_or_closed_order() -> None:
     order_id = uuid4()
     uow.orders.get_by_id.return_value = None
 
-    with pytest.raises(OrderDoesNotExists):
+    with pytest.raises(OrderNotFound):
         service.add_order_items(order_id, [])
 
     uow.orders.get_by_id.return_value = Order(
@@ -216,7 +216,7 @@ def test_finish_order_rejects_missing_or_non_open_order(operation: str) -> None:
     order_id = uuid4()
     uow.orders.get_by_id.return_value = None
 
-    with pytest.raises(OrderDoesNotExists):
+    with pytest.raises(OrderNotFound):
         getattr(service, operation)(order_id)
 
     uow.orders.get_by_id.return_value = Order(

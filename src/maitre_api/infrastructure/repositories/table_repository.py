@@ -57,7 +57,7 @@ class TableRepository:
         return self._set_status(table, TableStatus.OCCUPIED)
 
     def free_table(self, table: Table) -> Table:
-        return self._set_status(table, TableStatus.AVAIALABLE)
+        return self._set_status(table, TableStatus.AVAILABLE)
 
     def list(self) -> list[Table]:
         statement = select(TableModel).order_by(TableModel.number.asc())

@@ -146,8 +146,8 @@ def test_occupy_and_free_update_table_status() -> None:
     assert repository.occupy_table(table) is table
     assert table.status == TableStatus.OCCUPIED
     assert repository.free_table(table) is table
-    assert table.status == TableStatus.AVAIALABLE
-    assert model.status == TableStatus.AVAIALABLE
+    assert table.status == TableStatus.AVAILABLE
+    assert model.status == TableStatus.AVAILABLE
     session.get.assert_called_with(Table, table.id)
     assert session.flush.call_count == 2
 

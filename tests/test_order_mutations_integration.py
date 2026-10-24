@@ -127,7 +127,7 @@ def test_concurrent_mutations_preserve_order_and_table_state(
         assert session.get(Table, table_id).status == (
             TableStatus.OCCUPIED
             if expected_status == OrderStatus.OPEN
-            else TableStatus.AVAIALABLE
+            else TableStatus.AVAILABLE
         )
 
 
@@ -192,7 +192,7 @@ def test_failed_mutation_rolls_back_changes_and_releases_lock(
 
     with factory() as session:
         assert session.get(Order, order_id).status == OrderStatus.CLOSED
-        assert session.get(Table, table_id).status == TableStatus.AVAIALABLE
+        assert session.get(Table, table_id).status == TableStatus.AVAILABLE
 
 
 @pytest.mark.parametrize("lookup", ["get_by_id", "get_open_by_table_id"])

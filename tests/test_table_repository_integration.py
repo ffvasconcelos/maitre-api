@@ -8,7 +8,7 @@ from maitre_api.application.schemas.table import TableCreate
 from maitre_api.application.services.order_service import OrderService
 from maitre_api.domain.enums import TableStatus
 from maitre_api.domain.exceptions.table import (
-    TableNotAvaiable,
+    TableNotAvailable,
     TableNumberAlreadyExists,
 )
 from maitre_api.infrastructure.database.models.table import Table
@@ -32,10 +32,10 @@ def test_locked_read_refreshes_preloaded_table_status(
     key = table_id if lookup == "get_by_id" else table_number
     with factory() as stale_session:
         cached_model = stale_session.get(Table, table_id)
-        assert cached_model.status == TableStatus.AVAIALABLE
+        assert cached_model.status == TableStatus.AVAILABLE
         repository = TableRepository(stale_session)
         cached_table = getattr(repository, lookup)(key)
-        assert cached_table.status == TableStatus.AVAIALABLE
+        assert cached_table.status == TableStatus.AVAILABLE
 
         with factory() as session:
             OrderService(SqlAlchemyUnitOfWork(session)).create_order(
@@ -48,7 +48,7 @@ def test_locked_read_refreshes_preloaded_table_status(
         assert refreshed.id == table_id
         assert refreshed.number == table_number
 
-        with pytest.raises(TableNotAvaiable):
+        with pytest.raises(TableNotAvailable):
             OrderService(SqlAlchemyUnitOfWork(stale_session)).create_order(
                 OrderCreate(table_id=table_id, items=[])
             )

@@ -75,7 +75,7 @@ def test_domain_results_are_serializable_after_session_closes(
         assert order.created_at is not None
         assert order.items[0].created_at is not None
     assert closed.status == OrderStatus.CLOSED
-    assert closed.table.status == TableStatus.AVAIALABLE
+    assert closed.table.status == TableStatus.AVAILABLE
 
     # Domain values remain independent snapshots of the state read by each use case.
     assert fetched.status == OrderStatus.OPEN

@@ -8,10 +8,10 @@ from fastapi.testclient import TestClient
 from maitre_api.application.services.order_service import OrderService
 from maitre_api.application.services.product_service import ProductService
 from maitre_api.application.services.table_service import TableService
-from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
+from maitre_api.domain.exceptions.order import OrderNotFound, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
 from maitre_api.domain.exceptions.table import (
-    TableNotAvaiable,
+    TableNotAvailable,
     TableNotFound,
     TableNumberAlreadyExists,
     TableNumberNotFound,
@@ -199,7 +199,7 @@ def test_create_order_returns_created_order() -> None:
     ("exception", "status_code"),
     [
         (ProductNotActive(uuid4()), 409),
-        (TableNotAvaiable(7), 409),
+        (TableNotAvailable(7), 409),
         (ProductNotFound(uuid4()), 404),
         (TableNotFound(uuid4()), 404),
     ],
@@ -222,7 +222,7 @@ def test_create_order_maps_domain_errors(
         (ProductNotActive(uuid4()), 409),
         (OrderNotOpen(uuid4()), 409),
         (ProductNotFound(uuid4()), 404),
-        (OrderDoesNotExists(uuid4()), 404),
+        (OrderNotFound(uuid4()), 404),
     ],
 )
 def test_add_order_items_maps_domain_errors(
@@ -240,7 +240,7 @@ def test_add_order_items_maps_domain_errors(
 @pytest.mark.parametrize("action", ["close", "cancel"])
 @pytest.mark.parametrize(
     ("exception", "status_code"),
-    [(OrderDoesNotExists(uuid4()), 404), (OrderNotOpen(uuid4()), 409)],
+    [(OrderNotFound(uuid4()), 404), (OrderNotOpen(uuid4()), 409)],
 )
 def test_finish_order_routes_map_domain_errors(
     action: str, exception: Exception, status_code: int
@@ -269,7 +269,7 @@ def test_list_orders_passes_query_filters_to_service() -> None:
 
 def test_get_missing_order_returns_404() -> None:
     service = MagicMock(spec=OrderService)
-    service.get_order_by_id.side_effect = OrderDoesNotExists(uuid4())
+    service.get_order_by_id.side_effect = OrderNotFound(uuid4())
     install_service(get_order_service, service)
 
     response = TestClient(app, raise_server_exceptions=False).get(f"/orders/{uuid4()}")

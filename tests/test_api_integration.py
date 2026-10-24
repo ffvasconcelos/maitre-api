@@ -80,7 +80,7 @@ def test_order_lifecycle_serializes_persisted_entities(
     assert client.post(f"/orders/{order['id']}/{action}").status_code == 409
     assert client.post(f"/orders/{order['id']}/items", json=[]).status_code == 409
     freed = client.get(f"/tables/{table['id']}")
-    assert freed.json()["status"] == TableStatus.AVAIALABLE.value
+    assert freed.json()["status"] == TableStatus.AVAILABLE.value
     assert client.post("/orders", json=payload).status_code == 201
 
 
@@ -104,7 +104,7 @@ def test_invalid_product_rolls_back_table_occupation(
 
     assert rejected.status_code == 404
     assert client.get(f"/tables/{table['id']}").json()["status"] == (
-        TableStatus.AVAIALABLE.value
+        TableStatus.AVAILABLE.value
     )
     assert client.get("/orders", params={"table_id": table["id"]}).json() == []
     assert (

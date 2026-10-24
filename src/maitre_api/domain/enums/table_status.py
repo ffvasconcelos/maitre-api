@@ -2,5 +2,5 @@ from enum import StrEnum
 
 
 class TableStatus(StrEnum):
-    AVAIALABLE = "disponível"
+    AVAILABLE = "disponível"
     OCCUPIED = "ocupada"

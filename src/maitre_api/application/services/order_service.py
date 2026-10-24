@@ -10,9 +10,9 @@ from maitre_api.domain.entities.order import Order
 from maitre_api.domain.entities.order_item import OrderItem
 from maitre_api.domain.enums import TableStatus
 from maitre_api.domain.enums.order_status import OrderStatus
-from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
+from maitre_api.domain.exceptions.order import OrderNotFound, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
-from maitre_api.domain.exceptions.table import TableNotAvaiable, TableNotFound
+from maitre_api.domain.exceptions.table import TableNotAvailable, TableNotFound
 
 
 class OrderService:
@@ -25,8 +25,8 @@ class OrderService:
 
             if table is None:
                 raise TableNotFound(order_create.table_id)
-            if table.status != TableStatus.AVAIALABLE:
-                raise TableNotAvaiable(table.number)
+            if table.status != TableStatus.AVAILABLE:
+                raise TableNotAvailable(table.number)
 
             uow.tables.occupy_table(table)
 
@@ -44,7 +44,7 @@ class OrderService:
             order = uow.orders.get_by_id(order_id)
 
             if order is None:
-                raise OrderDoesNotExists(order_id)
+                raise OrderNotFound(order_id)
 
             return order
 
@@ -55,7 +55,7 @@ class OrderService:
             order = uow.orders.get_by_id(order_id, for_update=True)
 
             if order is None:
-                raise OrderDoesNotExists(order_id)
+                raise OrderNotFound(order_id)
             elif order.status != OrderStatus.OPEN:
                 raise OrderNotOpen(order_id)
 
@@ -74,7 +74,7 @@ class OrderService:
             order = uow.orders.get_by_id(id, for_update=True)
 
             if order is None:
-                raise OrderDoesNotExists(id)
+                raise OrderNotFound(id)
             elif order.status != OrderStatus.OPEN:
                 raise OrderNotOpen(id)
 
@@ -89,7 +89,7 @@ class OrderService:
             order = uow.orders.get_by_id(id, for_update=True)
 
             if order is None:
-                raise OrderDoesNotExists(id)
+                raise OrderNotFound(id)
             elif order.status != OrderStatus.OPEN:
                 raise OrderNotOpen(id)
 

@@ -11,9 +11,9 @@ from maitre_api.application.schemas.order import (
     OrderResponse,
 )
 from maitre_api.domain.entities.order import Order
-from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
+from maitre_api.domain.exceptions.order import OrderNotFound, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
-from maitre_api.domain.exceptions.table import TableNotAvaiable, TableNotFound
+from maitre_api.domain.exceptions.table import TableNotAvailable, TableNotFound
 from maitre_api.presentation.http.dependencies import OrderServiceDep
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 def create_order(order: OrderCreate, service: OrderServiceDep) -> Order:
     try:
         return service.create_order(order)
-    except (ProductNotActive, TableNotAvaiable) as e:
+    except (ProductNotActive, TableNotAvailable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except (ProductNotFound, TableNotFound) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
@@ -41,7 +41,7 @@ def add_order_items(
         return service.add_order_items(order_id, order_items)
     except (ProductNotActive, OrderNotOpen) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
-    except (ProductNotFound, OrderDoesNotExists) as e:
+    except (ProductNotFound, OrderNotFound) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
@@ -53,7 +53,7 @@ def add_order_items(
 def close_order(order_id: UUID, service: OrderServiceDep) -> Order:
     try:
         return service.close_order(order_id)
-    except OrderDoesNotExists as e:
+    except OrderNotFound as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except OrderNotOpen as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
@@ -67,7 +67,7 @@ def close_order(order_id: UUID, service: OrderServiceDep) -> Order:
 def cancel_order(order_id: UUID, service: OrderServiceDep) -> Order:
     try:
         return service.cancel_order(order_id)
-    except OrderDoesNotExists as e:
+    except OrderNotFound as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except OrderNotOpen as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
@@ -85,7 +85,7 @@ def get_order_by_id(order_id: UUID, service: OrderServiceDep) -> Order:
     try:
         order = service.get_order_by_id(order_id)
         return order
-    except OrderDoesNotExists as e:
+    except OrderNotFound as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),

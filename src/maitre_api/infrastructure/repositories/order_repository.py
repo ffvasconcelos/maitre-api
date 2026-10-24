@@ -83,7 +83,6 @@ class OrderRepository:
         self.session.flush()
         for item, item_model in zip(new_items, models, strict=True):
             update_timestamps(item, item_model)
-        order.items.extend(new_items)
         return order
 
     def list(self, filter: OrderFilter) -> list[Order]:
@@ -99,16 +98,9 @@ class OrderRepository:
 
         return [to_order(model) for model in self.session.scalars(statement).all()]
 
-    def close(self, order: Order) -> Order:
-        return self._set_status(order, OrderStatus.CLOSED)
-
-    def cancel(self, order: Order) -> Order:
-        return self._set_status(order, OrderStatus.CANCELLED)
-
-    def _set_status(self, order: Order, status: OrderStatus) -> Order:
+    def save_status(self, order: Order) -> Order:
         model = self.session.get(OrderModel, order.id)
-        model.status = status
+        model.status = order.status
         self.session.flush()
-        order.status = model.status
         update_timestamps(order, model)
         return order

@@ -60,6 +60,7 @@ def test_add_items_persists_models_and_returns_domain_items() -> None:
         ),
     ]
 
+    order.add_items(items)
     result = repository.add_items(order, items)
 
     assert result is order
@@ -175,15 +176,16 @@ def test_list_without_filters_selects_all_orders() -> None:
     assert "WHERE" not in str(statement)
 
 
-def test_close_and_cancel_update_model_and_domain_status() -> None:
+@pytest.mark.parametrize("status", list(OrderStatus))
+def test_save_status_persists_the_domain_status(status: OrderStatus) -> None:
     session = MagicMock(spec=Session)
     repository = OrderRepository(session)
     order = make_order()
-    model = OrderModel(id=order.id, table_id=order.table_id, status=order.status)
+    model = OrderModel(id=order.id, table_id=order.table_id, status=OrderStatus.OPEN)
     session.get.return_value = model
+    order.status = status
 
-    assert repository.close(order) is order
-    assert order.status == model.status == OrderStatus.CLOSED
-    assert repository.cancel(order) is order
-    assert order.status == model.status == OrderStatus.CANCELLED
-    assert session.flush.call_count == 2
+    assert repository.save_status(order) is order
+    assert order.status == model.status == status
+    session.get.assert_called_once_with(OrderModel, order.id)
+    session.flush.assert_called_once_with()

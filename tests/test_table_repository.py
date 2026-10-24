@@ -137,19 +137,17 @@ def test_create_preserves_unrelated_integrity_errors(original: Exception) -> Non
     assert raised.value is error
 
 
-def test_occupy_and_free_update_table_status() -> None:
+@pytest.mark.parametrize("status", list(TableStatus))
+def test_save_status_persists_the_domain_status(status: TableStatus) -> None:
     repository, session = make_repository()
-    table = TableEntity(number=2, capacity=4)
+    table = TableEntity(number=2, capacity=4, status=status)
     model = Table(id=table.id, number=2, capacity=4)
     session.get.return_value = model
 
-    assert repository.occupy_table(table) is table
-    assert table.status == TableStatus.OCCUPIED
-    assert repository.free_table(table) is table
-    assert table.status == TableStatus.AVAILABLE
-    assert model.status == TableStatus.AVAILABLE
-    session.get.assert_called_with(Table, table.id)
-    assert session.flush.call_count == 2
+    assert repository.save_status(table) is table
+    assert model.status == status
+    session.get.assert_called_once_with(Table, table.id)
+    session.flush.assert_called_once_with()
 
 
 def test_list_orders_tables_by_number_ascending() -> None:

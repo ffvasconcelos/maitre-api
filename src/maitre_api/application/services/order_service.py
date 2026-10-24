@@ -8,11 +8,9 @@ from maitre_api.application.schemas.order import (
 )
 from maitre_api.domain.entities.order import Order
 from maitre_api.domain.entities.order_item import OrderItem
-from maitre_api.domain.enums import TableStatus
-from maitre_api.domain.enums.order_status import OrderStatus
-from maitre_api.domain.exceptions.order import OrderNotFound, OrderNotOpen
+from maitre_api.domain.exceptions.order import OrderNotFound
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
-from maitre_api.domain.exceptions.table import TableNotAvailable, TableNotFound
+from maitre_api.domain.exceptions.table import TableNotFound
 
 
 class OrderService:
@@ -25,10 +23,8 @@ class OrderService:
 
             if table is None:
                 raise TableNotFound(order_create.table_id)
-            if table.status != TableStatus.AVAILABLE:
-                raise TableNotAvailable(table.number)
-
-            uow.tables.occupy_table(table)
+            table.occupy()
+            uow.tables.save_status(table)
 
             order = uow.orders.add(
                 Order(
@@ -56,10 +52,10 @@ class OrderService:
 
             if order is None:
                 raise OrderNotFound(order_id)
-            elif order.status != OrderStatus.OPEN:
-                raise OrderNotOpen(order_id)
+            order.ensure_open()
 
             items = self._assemble_items(uow, order_items)
+            order.add_items(items)
             updated_order = uow.orders.add_items(order, items)
             uow.commit()
 
@@ -69,35 +65,35 @@ class OrderService:
         with self._uow as uow:
             return uow.orders.list(filter)
 
-    def close_order(self, id: UUID) -> Order:
+    def close_order(self, order_id: UUID) -> Order:
         with self._uow as uow:
-            order = uow.orders.get_by_id(id, for_update=True)
+            order = uow.orders.get_by_id(order_id, for_update=True)
 
             if order is None:
-                raise OrderNotFound(id)
-            elif order.status != OrderStatus.OPEN:
-                raise OrderNotOpen(id)
+                raise OrderNotFound(order_id)
 
-            closed_order = uow.orders.close(order)
-            uow.tables.free_table(order.table)
+            order.close()
+            order.table.release()
+            uow.orders.save_status(order)
+            uow.tables.save_status(order.table)
             uow.commit()
 
-            return closed_order
+            return order
 
-    def cancel_order(self, id: UUID) -> Order:
+    def cancel_order(self, order_id: UUID) -> Order:
         with self._uow as uow:
-            order = uow.orders.get_by_id(id, for_update=True)
+            order = uow.orders.get_by_id(order_id, for_update=True)
 
             if order is None:
-                raise OrderNotFound(id)
-            elif order.status != OrderStatus.OPEN:
-                raise OrderNotOpen(id)
+                raise OrderNotFound(order_id)
 
-            canceled_order = uow.orders.cancel(order)
-            uow.tables.free_table(order.table)
+            order.cancel()
+            order.table.release()
+            uow.orders.save_status(order)
+            uow.tables.save_status(order.table)
             uow.commit()
 
-            return canceled_order
+            return order
 
     # Private functions
     def _assemble_items(

@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from maitre_api.application.schemas.table import TableCreate
 from maitre_api.domain.entities.table import Table
-from maitre_api.domain.enums.table_status import TableStatus
 from maitre_api.domain.exceptions.table import TableNumberAlreadyExists
 from maitre_api.infrastructure.database.models.table import Table as TableModel
 from maitre_api.infrastructure.repositories.mappers import to_table, update_timestamps
@@ -53,20 +52,13 @@ class TableRepository:
             raise
         return to_table(new_table)
 
-    def occupy_table(self, table: Table) -> Table:
-        return self._set_status(table, TableStatus.OCCUPIED)
-
-    def free_table(self, table: Table) -> Table:
-        return self._set_status(table, TableStatus.AVAILABLE)
-
     def list(self) -> list[Table]:
         statement = select(TableModel).order_by(TableModel.number.asc())
         return [to_table(model) for model in self.session.scalars(statement).all()]
 
-    def _set_status(self, table: Table, status: TableStatus) -> Table:
+    def save_status(self, table: Table) -> Table:
         model = self.session.get(TableModel, table.id)
-        model.status = status
+        model.status = table.status
         self.session.flush()
-        table.status = model.status
         update_timestamps(table, model)
         return table

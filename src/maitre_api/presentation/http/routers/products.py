@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 
 from maitre_api.application.schemas.product import ProductCreate, ProductResponse
 from maitre_api.domain.entities.product import Product
-from maitre_api.domain.exceptions.product import ProductNotFound
 from maitre_api.presentation.http.dependencies import ProductServiceDep
+from maitre_api.presentation.http.schemas.error import error_responses
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -21,15 +21,10 @@ def list_products(service: ProductServiceDep) -> list[Product]:
 
 
 @router.get(
-    "/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK
+    "/{product_id}",
+    response_model=ProductResponse,
+    status_code=status.HTTP_200_OK,
+    responses=error_responses(404),
 )
 def get_product_by_id(product_id: UUID, service: ProductServiceDep) -> Product:
-    try:
-        product = service.get_product(product_id)
-    except ProductNotFound as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-
-    return product
+    return service.get_product(product_id)

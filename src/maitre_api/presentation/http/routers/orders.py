@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 
 from maitre_api.application.schemas.order import (
     OrderCreate,
@@ -11,66 +11,52 @@ from maitre_api.application.schemas.order import (
     OrderResponse,
 )
 from maitre_api.domain.entities.order import Order
-from maitre_api.domain.exceptions.order import OrderNotFound, OrderNotOpen
-from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
-from maitre_api.domain.exceptions.table import TableNotAvailable, TableNotFound
 from maitre_api.presentation.http.dependencies import OrderServiceDep
+from maitre_api.presentation.http.schemas.error import error_responses
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
-@router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=OrderResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses=error_responses(404, 409),
+)
 def create_order(order: OrderCreate, service: OrderServiceDep) -> Order:
-    try:
-        return service.create_order(order)
-    except (ProductNotActive, TableNotAvailable) as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
-    except (ProductNotFound, TableNotFound) as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    return service.create_order(order)
 
 
 @router.post(
     "/{order_id}/items",
     response_model=OrderResponse,
     status_code=status.HTTP_201_CREATED,
+    responses=error_responses(404, 409),
 )
 def add_order_items(
     order_id: UUID, order_items: list[OrderItemCreate], service: OrderServiceDep
 ) -> Order:
-    try:
-        return service.add_order_items(order_id, order_items)
-    except (ProductNotActive, OrderNotOpen) as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
-    except (ProductNotFound, OrderNotFound) as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    return service.add_order_items(order_id, order_items)
 
 
 @router.post(
     "/{order_id}/close",
     response_model=OrderResponse,
     status_code=status.HTTP_200_OK,
+    responses=error_responses(404, 409),
 )
 def close_order(order_id: UUID, service: OrderServiceDep) -> Order:
-    try:
-        return service.close_order(order_id)
-    except OrderNotFound as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
-    except OrderNotOpen as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
+    return service.close_order(order_id)
 
 
 @router.post(
     "/{order_id}/cancel",
     response_model=OrderResponse,
     status_code=status.HTTP_200_OK,
+    responses=error_responses(404, 409),
 )
 def cancel_order(order_id: UUID, service: OrderServiceDep) -> Order:
-    try:
-        return service.cancel_order(order_id)
-    except OrderNotFound as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
-    except OrderNotOpen as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
+    return service.cancel_order(order_id)
 
 
 @router.get("", response_model=list[OrderListResponse], status_code=status.HTTP_200_OK)
@@ -80,13 +66,11 @@ def list_orders(
     return service.list_orders(filter)
 
 
-@router.get("/{order_id}", response_model=OrderResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/{order_id}",
+    response_model=OrderResponse,
+    status_code=status.HTTP_200_OK,
+    responses=error_responses(404),
+)
 def get_order_by_id(order_id: UUID, service: OrderServiceDep) -> Order:
-    try:
-        order = service.get_order_by_id(order_id)
-        return order
-    except OrderNotFound as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
+    return service.get_order_by_id(order_id)

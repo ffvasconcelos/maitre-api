@@ -2,12 +2,15 @@ from fastapi import FastAPI, HTTPException, status
 from sqlalchemy import text
 
 from maitre_api.presentation.http.dependencies import DBSession
+from maitre_api.presentation.http.exception_handlers import register_exception_handlers
 from maitre_api.presentation.http.routers import orders, products, tables
 
 app = FastAPI(
     title="Maitre API",
     version="0.1.0",
 )
+
+register_exception_handlers(app)
 
 app.include_router(products.router)
 app.include_router(tables.router)

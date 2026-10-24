@@ -103,6 +103,7 @@ def test_invalid_product_rolls_back_table_occupation(
     )
 
     assert rejected.status_code == 404
+    assert rejected.json()["code"] == "product_not_found"
     assert client.get(f"/tables/{table['id']}").json()["status"] == (
         TableStatus.AVAILABLE.value
     )
@@ -153,7 +154,10 @@ def test_concurrent_table_creation_returns_created_and_conflict(
 
     assert sorted(response.status_code for response in responses) == [201, 409]
     conflict = next(response for response in responses if response.status_code == 409)
-    assert conflict.json() == {"detail": str(TableNumberAlreadyExists(number))}
+    assert conflict.json() == {
+        "code": "table_number_already_exists",
+        "detail": str(TableNumberAlreadyExists(number)),
+    }
     with integration_session_factory() as session:
         assert (
             session.scalar(

@@ -1,25 +1,23 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 
 from maitre_api.application.schemas.table import TableCreate, TableResponse
 from maitre_api.domain.entities.table import Table
-from maitre_api.domain.exceptions.table import (
-    TableNotFound,
-    TableNumberAlreadyExists,
-    TableNumberNotFound,
-)
 from maitre_api.presentation.http.dependencies import TableServiceDep
+from maitre_api.presentation.http.schemas.error import error_responses
 
 router = APIRouter(prefix="/tables", tags=["Tables"])
 
 
-@router.post("", response_model=TableResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=TableResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses=error_responses(409),
+)
 def create_table(table: TableCreate, service: TableServiceDep) -> Table:
-    try:
-        return service.create_table(table)
-    except TableNumberAlreadyExists as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
+    return service.create_table(table)
 
 
 @router.get("", response_model=list[TableResponse], status_code=status.HTTP_200_OK)
@@ -28,29 +26,20 @@ def list_tables(service: TableServiceDep) -> list[Table]:
 
 
 @router.get(
-    "/by_number/{number}", response_model=TableResponse, status_code=status.HTTP_200_OK
+    "/by_number/{number}",
+    response_model=TableResponse,
+    status_code=status.HTTP_200_OK,
+    responses=error_responses(404),
 )
 def get_table_by_number(number: int, service: TableServiceDep) -> Table:
-    try:
-        table = service.get_table_by_number(number)
-    except TableNumberNotFound as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-
-    return table
+    return service.get_table_by_number(number)
 
 
-@router.get("/{table_id}", response_model=TableResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/{table_id}",
+    response_model=TableResponse,
+    status_code=status.HTTP_200_OK,
+    responses=error_responses(404),
+)
 def get_table_by_id(table_id: UUID, service: TableServiceDep) -> Table:
-    try:
-        table = service.get_table_by_id(table_id)
-
-    except TableNotFound as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-
-    return table
+    return service.get_table_by_id(table_id)

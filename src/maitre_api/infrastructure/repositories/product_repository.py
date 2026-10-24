@@ -11,15 +11,15 @@ class ProductRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_by_id(self, id: uuid.UUID) -> Product | None:
-        return self.session.get(Product, id)
+    def get_by_id(self, product_id: uuid.UUID) -> Product | None:
+        return self.session.get(Product, product_id)
 
-    def create(self, data: ProductCreate) -> Product:
+    def create(self, product_data: ProductCreate) -> Product:
         new_product = Product(
-            name=data.name,
-            description=data.description,
-            price=data.price,
-            active=data.active,
+            name=product_data.name,
+            description=product_data.description,
+            price=product_data.price,
+            active=product_data.active,
         )
 
         self.session.add(new_product)

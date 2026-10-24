@@ -26,7 +26,6 @@ class Order(BaseModel):
 
     table: Mapped["Table"] = relationship()  # noqa: F821 # type: ignore
 
-
     __table_args__ = (
         Index(
             "uq_open_order_per_table",

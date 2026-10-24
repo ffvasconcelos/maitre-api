@@ -13,7 +13,7 @@ class OrderItem(BaseModel):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     order_id: Mapped[UUID] = mapped_column(ForeignKey("orders.id"), nullable=False)
     product_id: Mapped[UUID] = mapped_column(ForeignKey("products.id"), nullable=False)
-    quantity: Mapped[Integer] = mapped_column(
+    quantity: Mapped[int] = mapped_column(
         Integer, CheckConstraint("quantity > 0", name="check_quantity_gt_0")
     )
     unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)

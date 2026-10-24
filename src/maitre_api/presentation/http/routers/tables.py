@@ -8,13 +8,14 @@ from maitre_api.domain.exceptions.table import (
     TableNumberAlreadyExists,
     TableNumberNotFound,
 )
+from maitre_api.infrastructure.database.models.table import Table
 from maitre_api.presentation.http.dependencies import TableServiceDep
 
 router = APIRouter(prefix="/tables", tags=["Tables"])
 
 
 @router.post("", response_model=TableResponse, status_code=status.HTTP_201_CREATED)
-def create_table(table: TableCreate, service: TableServiceDep) -> TableResponse:
+def create_table(table: TableCreate, service: TableServiceDep) -> Table:
     try:
         return service.create_table(table)
     except TableNumberAlreadyExists as e:
@@ -22,14 +23,14 @@ def create_table(table: TableCreate, service: TableServiceDep) -> TableResponse:
 
 
 @router.get("", response_model=list[TableResponse], status_code=status.HTTP_200_OK)
-def list_tables(service: TableServiceDep) -> list[TableResponse]:
+def list_tables(service: TableServiceDep) -> list[Table]:
     return service.list_tables()
 
 
 @router.get(
     "/by_number/{number}", response_model=TableResponse, status_code=status.HTTP_200_OK
 )
-def get_table_by_number(number: int, service: TableServiceDep) -> TableResponse:
+def get_table_by_number(number: int, service: TableServiceDep) -> Table:
     try:
         table = service.get_table_by_number(number)
     except TableNumberNotFound as e:
@@ -42,7 +43,7 @@ def get_table_by_number(number: int, service: TableServiceDep) -> TableResponse:
 
 
 @router.get("/{table_id}", response_model=TableResponse, status_code=status.HTTP_200_OK)
-def get_table_by_id(table_id: UUID, service: TableServiceDep) -> TableResponse:
+def get_table_by_id(table_id: UUID, service: TableServiceDep) -> Table:
     try:
         table = service.get_table_by_id(table_id)
 

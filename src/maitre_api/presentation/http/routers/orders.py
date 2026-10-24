@@ -13,13 +13,14 @@ from maitre_api.application.schemas.order import (
 from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
 from maitre_api.domain.exceptions.table import TableNotAvaiable, TableNotFound
+from maitre_api.infrastructure.database.models.order import Order
 from maitre_api.presentation.http.dependencies import OrderServiceDep
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-def create_order(order: OrderCreate, service: OrderServiceDep) -> OrderResponse:
+def create_order(order: OrderCreate, service: OrderServiceDep) -> Order:
     try:
         return service.create_order(order)
     except (ProductNotActive, TableNotAvaiable) as e:
@@ -35,7 +36,7 @@ def create_order(order: OrderCreate, service: OrderServiceDep) -> OrderResponse:
 )
 def add_order_items(
     order_id: UUID, order_items: list[OrderItemCreate], service: OrderServiceDep
-) -> OrderResponse:
+) -> Order:
     try:
         return service.add_order_items(order_id, order_items)
     except (ProductNotActive, OrderNotOpen) as e:
@@ -49,7 +50,7 @@ def add_order_items(
     response_model=OrderResponse,
     status_code=status.HTTP_200_OK,
 )
-def close_order(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
+def close_order(order_id: UUID, service: OrderServiceDep) -> Order:
     try:
         return service.close_order(order_id)
     except OrderDoesNotExists as e:
@@ -63,7 +64,7 @@ def close_order(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
     response_model=OrderResponse,
     status_code=status.HTTP_200_OK,
 )
-def cancel_order(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
+def cancel_order(order_id: UUID, service: OrderServiceDep) -> Order:
     try:
         return service.cancel_order(order_id)
     except OrderDoesNotExists as e:
@@ -75,15 +76,12 @@ def cancel_order(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
 @router.get("", response_model=list[OrderListResponse], status_code=status.HTTP_200_OK)
 def list_orders(
     filter: Annotated[OrderFilter, Query()], service: OrderServiceDep
-) -> list[OrderListResponse]:
-    try:
-        return service.list_orders(filter)
-    except OrderDoesNotExists as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+) -> list[Order]:
+    return service.list_orders(filter)
 
 
 @router.get("/{order_id}", response_model=OrderResponse, status_code=status.HTTP_200_OK)
-def get_order_by_id(order_id: UUID, service: OrderServiceDep) -> OrderResponse:
+def get_order_by_id(order_id: UUID, service: OrderServiceDep) -> Order:
     try:
         order = service.get_order_by_id(order_id)
         return order

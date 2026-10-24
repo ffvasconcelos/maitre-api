@@ -26,7 +26,7 @@ def test_create_adds_and_flushes_product() -> None:
         active=False,
     )
 
-    result = repository.create(product_data)
+    result = repository.create(product_data=product_data)
 
     assert isinstance(result, Product)
     assert result.name == product_data.name
@@ -43,7 +43,7 @@ def test_get_by_id_uses_session_lookup() -> None:
     product = Product(name="Soup", price=Decimal("8.50"))
     session.get.return_value = product
 
-    result = repository.get_by_id(product_id)
+    result = repository.get_by_id(product_id=product_id)
 
     assert result is product
     session.get.assert_called_once_with(Product, product_id)

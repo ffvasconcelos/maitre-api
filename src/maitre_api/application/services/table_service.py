@@ -34,7 +34,7 @@ class TableService:
 
             return table
 
-    def get_table_by_number(self, table_number: int) -> Table | None:
+    def get_table_by_number(self, table_number: int) -> Table:
         with self._uow as uow:
             table = uow.tables.get_by_number(table_number)
 

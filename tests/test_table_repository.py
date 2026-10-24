@@ -64,15 +64,13 @@ def test_create_adds_and_flushes_table() -> None:
 
 def test_occupy_and_free_update_table_status() -> None:
     repository, session = make_repository()
-    table_id = uuid4()
     table = Table(number=2, capacity=4)
-    session.get.return_value = table
 
-    assert repository.occupy_table(table_id) is table
+    assert repository.occupy_table(table) is table
     assert table.status == TableStatus.OCCUPIED
     assert repository.free_table(table) is table
     assert table.status == TableStatus.AVAIALABLE
-    session.get.assert_called_once_with(Table, table_id)
+    session.get.assert_not_called()
     assert session.flush.call_count == 2
 
 

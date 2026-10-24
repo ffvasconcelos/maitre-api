@@ -45,7 +45,7 @@ def test_create_order_occupies_table_and_snapshots_product_price() -> None:
     assert result.items[0].product is product
     assert result.items[0].quantity == 2
     assert result.items[0].unit_price == Decimal("8.50")
-    uow.tables.occupy_table.assert_called_once_with(table_id)
+    uow.tables.occupy_table.assert_called_once_with(table)
     uow.tables.get_by_id_for_update.assert_called_once_with(table_id)
     uow.commit.assert_called_once_with()
 

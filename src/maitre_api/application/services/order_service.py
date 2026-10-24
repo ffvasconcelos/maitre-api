@@ -28,7 +28,7 @@ class OrderService:
             if table.status != TableStatus.AVAIALABLE:
                 raise TableNotAvaiable(table.number)
 
-            uow.tables.occupy_table(order_create.table_id)
+            uow.tables.occupy_table(table)
 
             order = uow.orders.add(
                 Order(

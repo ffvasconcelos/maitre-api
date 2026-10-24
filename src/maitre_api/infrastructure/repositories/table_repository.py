@@ -16,11 +16,7 @@ class TableRepository:
         return self.session.get(Table, id)
 
     def get_by_id_for_update(self, id: UUID) -> Table | None:
-        statement = (
-            select(Table)
-            .where(Table.id == id)
-            .with_for_update()
-        )
+        statement = select(Table).where(Table.id == id).with_for_update()
         return self.session.scalar(statement)
 
     def get_by_number(self, table_number: int) -> Table | None:
@@ -33,8 +29,7 @@ class TableRepository:
         self.session.flush()
         return new_table
 
-    def occupy_table(self, id: UUID) -> Table:
-        table = self.session.get(Table, id)
+    def occupy_table(self, table: Table) -> Table:
         table.status = TableStatus.OCCUPIED
         self.session.flush()
         return table

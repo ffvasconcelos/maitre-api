@@ -107,6 +107,30 @@ def test_get_missing_product_returns_404() -> None:
     assert response.status_code == 404
 
 
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"name": "x" * 151},
+        {"description": "x" * 251},
+        {"price": "100000000.00"},
+        {"price": "1.001"},
+        {"active": None},
+    ],
+)
+def test_create_product_rejects_values_outside_storage_contract(
+    overrides: dict,
+) -> None:
+    service = MagicMock(spec=ProductService)
+    install_service(get_product_service, service)
+
+    response = client.post(
+        "/products", json={"name": "Soup", "price": "8.50", **overrides}
+    )
+
+    assert response.status_code == 422
+    service.create_product.assert_not_called()
+
+
 def test_table_routes_create_list_and_get_by_id_or_number() -> None:
     service = MagicMock(spec=TableService)
     table = table_response()

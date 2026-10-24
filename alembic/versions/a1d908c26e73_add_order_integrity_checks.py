@@ -18,12 +18,8 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.create_check_constraint(
-        "check_quantity_gt_0", "order_items", "quantity > 0"
-    )
-    op.create_check_constraint(
-        "check_capacity_number_gt_0", "tables", "capacity > 0"
-    )
+    op.create_check_constraint("check_quantity_gt_0", "order_items", "quantity > 0")
+    op.create_check_constraint("check_capacity_number_gt_0", "tables", "capacity > 0")
 
 
 def downgrade() -> None:

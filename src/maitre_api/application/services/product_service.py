@@ -2,8 +2,8 @@ from uuid import UUID
 
 from maitre_api.application.ports.unit_of_work import UnitOfWork
 from maitre_api.application.schemas.product import ProductCreate
+from maitre_api.domain.entities.product import Product
 from maitre_api.domain.exceptions.product import ProductNotFound
-from maitre_api.infrastructure.database.models.product import Product
 
 
 class ProductService:
@@ -16,7 +16,7 @@ class ProductService:
             uow.commit()
             return product
 
-    def get_product(self, product_id: UUID) -> Product | None:
+    def get_product(self, product_id: UUID) -> Product:
         with self._uow as uow:
             product = uow.products.get_by_id(product_id)
 

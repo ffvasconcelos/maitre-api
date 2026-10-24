@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 
 from sqlalchemy import Enum as SqlAlchemyEnum
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from maitre_api.domain.enums import OrderStatus
@@ -25,3 +25,12 @@ class Order(BaseModel):
     )
 
     table: Mapped["Table"] = relationship()  # noqa: F821 # type: ignore
+
+    __table_args__ = (
+        Index(
+            "uq_open_order_per_table",
+            "table_id",
+            unique=True,
+            postgresql_where=(status == OrderStatus.OPEN),
+        ),
+    )

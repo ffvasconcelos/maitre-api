@@ -8,10 +8,10 @@ from fastapi.testclient import TestClient
 from maitre_api.application.services.order_service import OrderService
 from maitre_api.application.services.product_service import ProductService
 from maitre_api.application.services.table_service import TableService
-from maitre_api.domain.exceptions.order import OrderDoesNotExists, OrderNotOpen
+from maitre_api.domain.exceptions.order import OrderNotFound, OrderNotOpen
 from maitre_api.domain.exceptions.product import ProductNotActive, ProductNotFound
 from maitre_api.domain.exceptions.table import (
-    TableNotAvaiable,
+    TableNotAvailable,
     TableNotFound,
     TableNumberAlreadyExists,
     TableNumberNotFound,
@@ -99,12 +99,40 @@ def test_product_routes_create_list_and_get() -> None:
 
 def test_get_missing_product_returns_404() -> None:
     service = MagicMock(spec=ProductService)
-    service.get_product.side_effect = ProductNotFound(uuid4())
+    exception = ProductNotFound(uuid4())
+    service.get_product.side_effect = exception
     install_service(get_product_service, service)
 
     response = client.get(f"/products/{uuid4()}")
 
     assert response.status_code == 404
+    assert response.json() == {"code": "product_not_found", "detail": str(exception)}
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"name": "x" * 151},
+        {"description": "x" * 251},
+        {"price": "100000000.00"},
+        {"price": "1.001"},
+        {"active": None},
+    ],
+)
+def test_create_product_rejects_values_outside_storage_contract(
+    overrides: dict,
+) -> None:
+    service = MagicMock(spec=ProductService)
+    install_service(get_product_service, service)
+
+    response = client.post(
+        "/products", json={"name": "Soup", "price": "8.50", **overrides}
+    )
+
+    assert response.status_code == 422
+    assert isinstance(response.json()["detail"], list)
+    assert "code" not in response.json()
+    service.create_product.assert_not_called()
 
 
 def test_table_routes_create_list_and_get_by_id_or_number() -> None:
@@ -129,15 +157,15 @@ def test_table_routes_create_list_and_get_by_id_or_number() -> None:
 
 
 @pytest.mark.parametrize(
-    ("path", "exception"),
+    ("path", "exception", "code"),
     [
-        ("/tables", TableNumberAlreadyExists(7)),
-        ("/tables/by_number/7", TableNumberNotFound(7)),
-        (f"/tables/{uuid4()}", TableNotFound(uuid4())),
+        ("/tables", TableNumberAlreadyExists(7), "table_number_already_exists"),
+        ("/tables/by_number/7", TableNumberNotFound(7), "table_number_not_found"),
+        (f"/tables/{uuid4()}", TableNotFound(uuid4()), "table_not_found"),
     ],
 )
 def test_table_routes_map_domain_errors_to_http_conflicts_and_not_found(
-    path: str, exception: Exception
+    path: str, exception: Exception, code: str
 ) -> None:
     service = MagicMock(spec=TableService)
     install_service(get_table_service, service)
@@ -153,6 +181,7 @@ def test_table_routes_map_domain_errors_to_http_conflicts_and_not_found(
         service.get_table_by_id.side_effect = exception
         response = client.get(path)
         assert response.status_code == 404
+    assert response.json() == {"code": code, "detail": str(exception)}
 
 
 def test_create_order_returns_created_order() -> None:
@@ -172,16 +201,16 @@ def test_create_order_returns_created_order() -> None:
 
 
 @pytest.mark.parametrize(
-    ("exception", "status_code"),
+    ("exception", "status_code", "code"),
     [
-        (ProductNotActive(uuid4()), 409),
-        (TableNotAvaiable(7), 409),
-        (ProductNotFound(uuid4()), 404),
-        (TableNotFound(uuid4()), 404),
+        (ProductNotActive(uuid4()), 409, "product_not_active"),
+        (TableNotAvailable(7), 409, "table_not_available"),
+        (ProductNotFound(uuid4()), 404, "product_not_found"),
+        (TableNotFound(uuid4()), 404, "table_not_found"),
     ],
 )
 def test_create_order_maps_domain_errors(
-    exception: Exception, status_code: int
+    exception: Exception, status_code: int, code: str
 ) -> None:
     service = MagicMock(spec=OrderService)
     service.create_order.side_effect = exception
@@ -190,19 +219,20 @@ def test_create_order_maps_domain_errors(
     response = client.post("/orders", json={"table_id": str(uuid4()), "items": []})
 
     assert response.status_code == status_code
+    assert response.json() == {"code": code, "detail": str(exception)}
 
 
 @pytest.mark.parametrize(
-    ("exception", "status_code"),
+    ("exception", "status_code", "code"),
     [
-        (ProductNotActive(uuid4()), 409),
-        (OrderNotOpen(uuid4()), 409),
-        (ProductNotFound(uuid4()), 404),
-        (OrderDoesNotExists(uuid4()), 404),
+        (ProductNotActive(uuid4()), 409, "product_not_active"),
+        (OrderNotOpen(uuid4()), 409, "order_not_open"),
+        (ProductNotFound(uuid4()), 404, "product_not_found"),
+        (OrderNotFound(uuid4()), 404, "order_not_found"),
     ],
 )
 def test_add_order_items_maps_domain_errors(
-    exception: Exception, status_code: int
+    exception: Exception, status_code: int, code: str
 ) -> None:
     service = MagicMock(spec=OrderService)
     service.add_order_items.side_effect = exception
@@ -211,15 +241,19 @@ def test_add_order_items_maps_domain_errors(
     response = client.post(f"/orders/{uuid4()}/items", json=[])
 
     assert response.status_code == status_code
+    assert response.json() == {"code": code, "detail": str(exception)}
 
 
 @pytest.mark.parametrize("action", ["close", "cancel"])
 @pytest.mark.parametrize(
-    ("exception", "status_code"),
-    [(OrderDoesNotExists(uuid4()), 404), (OrderNotOpen(uuid4()), 409)],
+    ("exception", "status_code", "code"),
+    [
+        (OrderNotFound(uuid4()), 404, "order_not_found"),
+        (OrderNotOpen(uuid4()), 409, "order_not_open"),
+    ],
 )
 def test_finish_order_routes_map_domain_errors(
-    action: str, exception: Exception, status_code: int
+    action: str, exception: Exception, status_code: int, code: str
 ) -> None:
     service = MagicMock(spec=OrderService)
     getattr(service, f"{action}_order").side_effect = exception
@@ -228,6 +262,7 @@ def test_finish_order_routes_map_domain_errors(
     response = client.post(f"/orders/{uuid4()}/{action}")
 
     assert response.status_code == status_code
+    assert response.json() == {"code": code, "detail": str(exception)}
 
 
 def test_list_orders_passes_query_filters_to_service() -> None:
@@ -245,12 +280,14 @@ def test_list_orders_passes_query_filters_to_service() -> None:
 
 def test_get_missing_order_returns_404() -> None:
     service = MagicMock(spec=OrderService)
-    service.get_order_by_id.side_effect = OrderDoesNotExists(uuid4())
+    exception = OrderNotFound(uuid4())
+    service.get_order_by_id.side_effect = exception
     install_service(get_order_service, service)
 
     response = TestClient(app, raise_server_exceptions=False).get(f"/orders/{uuid4()}")
 
     assert response.status_code == 404
+    assert response.json() == {"code": "order_not_found", "detail": str(exception)}
 
 
 def test_get_existing_order_returns_order_response() -> None:
@@ -263,14 +300,3 @@ def test_get_existing_order_returns_order_response() -> None:
 
     assert response.status_code == 200
     assert response.json()["id"] == order["id"]
-
-
-def test_get_order_returns_404_when_service_returns_none() -> None:
-    service = MagicMock(spec=OrderService)
-    service.get_order_by_id.return_value = None
-    install_service(get_order_service, service)
-
-    response = client.get(f"/orders/{uuid4()}")
-
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Order not found"

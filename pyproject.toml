@@ -27,6 +27,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "ruff",
+    "testcontainers[postgres]>=4.15.0",
 ]
 
 [tool.ruff]

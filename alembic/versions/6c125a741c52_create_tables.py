@@ -29,7 +29,7 @@ def upgrade() -> None:
         sa.Column("capacity", sa.Integer(), nullable=False),
         sa.Column(
             "status",
-            sa.Enum("AVAIALABLE", "OCCUPIED", name="table_status"),
+            sa.Enum("AVAILABLE", "OCCUPIED", name="table_status"),
             nullable=False,
         ),
         sa.Column(

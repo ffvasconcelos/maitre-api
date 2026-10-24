@@ -3,18 +3,20 @@ from uuid import uuid4
 
 import pytest
 
+from maitre_api.application.ports.table_repository import TableRepositoryPort
 from maitre_api.application.schemas.table import TableCreate
 from maitre_api.application.services.table_service import TableService
+from maitre_api.domain.entities.table import Table
 from maitre_api.domain.exceptions.table import (
     TableNotFound,
     TableNumberAlreadyExists,
     TableNumberNotFound,
 )
-from maitre_api.infrastructure.database.models.table import Table
 
 
 def make_service() -> tuple[TableService, MagicMock]:
     uow = MagicMock()
+    uow.tables = MagicMock(spec=TableRepositoryPort)
     uow.__enter__.return_value = uow
     return TableService(uow), uow
 
@@ -26,6 +28,7 @@ def test_create_table_rejects_duplicate_number() -> None:
     with pytest.raises(TableNumberAlreadyExists):
         service.create_table(TableCreate(number=3, capacity=4))
 
+    uow.tables.get_by_number.assert_called_once_with(3, for_update=True)
     uow.tables.create.assert_not_called()
     uow.commit.assert_not_called()
 
@@ -40,7 +43,7 @@ def test_create_table_persists_and_commits() -> None:
     result = service.create_table(table_data)
 
     assert result is table
-    uow.tables.get_by_number.assert_called_once_with(3)
+    uow.tables.get_by_number.assert_called_once_with(3, for_update=True)
     uow.tables.create.assert_called_once_with(table_data)
     uow.commit.assert_called_once_with()
 
@@ -73,4 +76,6 @@ def test_get_and_list_tables_return_repository_results() -> None:
     assert service.get_table_by_id(table.id) is table
     assert service.get_table_by_number(3) is table
     assert service.list_tables() is tables
+    uow.tables.get_by_id.assert_called_once_with(table.id)
+    uow.tables.get_by_number.assert_called_once_with(3)
     uow.commit.assert_not_called()

@@ -12,18 +12,18 @@ class Table(BaseModel):
     __tablename__ = "tables"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    number: Mapped[Integer] = mapped_column(
+    number: Mapped[int] = mapped_column(
         Integer,
         CheckConstraint("number > 0", name="check_table_number_gt_0"),
         nullable=False,
         unique=True,
     )
-    capacity: Mapped[Integer] = mapped_column(
+    capacity: Mapped[int] = mapped_column(
         Integer,
         CheckConstraint("capacity > 0", name="check_capacity_number_gt_0"),
         nullable=False,
         default=2,
     )
     status: Mapped[TableStatus] = mapped_column(
-        SqlAlchemyEnum(TableStatus, name="table_status"), default=TableStatus.AVAIALABLE
+        SqlAlchemyEnum(TableStatus, name="table_status"), default=TableStatus.AVAILABLE
     )

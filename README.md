@@ -110,6 +110,27 @@ The Swagger API documentation is available at `http://127.0.0.1:8000/docs`.
 
 This project's API reference, created using Bruno, is available in the [maitre-api-reference][api-ref] repository.
 
+## Architecture
+
+The API separates HTTP delivery, use-case coordination, business rules, and persistence:
+
+```mermaid
+flowchart LR
+    HTTP["HTTP · FastAPI"] --> App["Application · services and ports"]
+    App --> Domain["Domain · entities and rules"]
+    Infra["Infrastructure · SQLAlchemy"] --> App
+    Infra --> Domain
+```
+
+Arrows show dependency direction. Services use repository ports; infrastructure implements them. Dependency providers connect the concrete adapters to the services.
+
+- **Domain:** entities and state transitions, independent of HTTP and the ORM.
+- **Application:** coordinates operations and transactions.
+- **Infrastructure:** persists data and maps database models to domain entities.
+- **HTTP:** validates requests, serializes responses, and translates business errors.
+
+See [three technical decisions behind the design](docs/architecture.md): ORM decoupling, atomic transactions, and concurrency control.
+
 ## Roadmap
 
 1. Stabilization and architectural improvements;

@@ -96,7 +96,7 @@ Run the test suite from the repository root:
 uv run pytest
 ```
 
-Pytest also reports code coverage and enforces the project's 90% coverage threshold. Make sure the `.env` file is configured before running the tests.
+Pytest also reports code coverage and enforces the project's 90% coverage threshold. Make sure the `.env` file is configured before running the tests. Docker must be running: the integration tests use Testcontainers to start an isolated PostgreSQL 17 instance and apply the Alembic migrations. They cover the HTTP order lifecycle, transaction rollback, database constraints, and concurrent order creation.
 
 ## API Documentation
 

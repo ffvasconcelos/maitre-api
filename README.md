@@ -62,6 +62,8 @@ cp .env.example .env
 
 Set `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` to the database name and credentials you want to use. Set `POSTGRES_HOST` and `POSTGRES_PORT` to the host and port where PostgreSQL is reachable. The example values are intended for local development.
 
+Credentials are used as supplied; do not URL-encode special characters in `.env`. SQL and connection-pool logging are disabled by default. Set `SQL_ECHO=true` or `SQL_ECHO_POOL=true` to enable them when debugging.
+
 ### Database Setup and Migrations
 
 Start PostgreSQL 17 locally, or start the repository's PostgreSQL container:

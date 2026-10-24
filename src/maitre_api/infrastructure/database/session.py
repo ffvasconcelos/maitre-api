@@ -3,10 +3,12 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from maitre_api.config import Settings
 
+settings = Settings()
+
 engine = create_engine(
-    Settings().database_url,
-    echo=True,
-    echo_pool=True,
+    settings.database_url,
+    echo=settings.sql_echo,
+    echo_pool=settings.sql_echo_pool,
 )
 
 SessionLocal = sessionmaker[Session](
